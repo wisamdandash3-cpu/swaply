@@ -1,0 +1,1 @@
+-- جدول الشكاوى: شغّل محتوى migrations/008_user_complaints.sql في Supabase SQL Editor

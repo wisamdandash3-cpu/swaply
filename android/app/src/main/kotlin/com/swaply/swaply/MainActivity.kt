@@ -1,0 +1,5 @@
+package com.swaply.swaply
+
+import io.flutter.embedding.android.FlutterActivity
+
+class MainActivity : FlutterActivity()

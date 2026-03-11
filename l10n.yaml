@@ -1,0 +1,8 @@
+arb-dir: lib/l10n
+template-arb-file: app_en.arb
+output-localization-file: app_localizations.dart
+output-class: AppLocalizations
+output-dir: lib/generated/l10n
+nullable-getter: false
+# تقرير بالرسائل غير المترجمة (مثلاً لـ zu وغيره) يُولَّد في هذا الملف بدل الطباعة في الكونسول.
+untranslated-messages-file: untranslated_messages.txt

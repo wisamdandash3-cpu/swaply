@@ -1,0 +1,23 @@
+---
+description: Do not change first-screen, language default, or language selection behavior
+globs: lib/main.dart
+alwaysApply: false
+---
+
+# Welcome / Language — Do Not Modify
+
+## Language rules (locked)
+
+- **Default language**: Always **English** (`en`). When no saved preference exists, use `Locale('en')`. Do not change this.
+- **Language selection**: User choice is saved in SharedPreferences under `_kLocaleKey` and applied at startup. All UI strings use `AppLocalizations` (generated from `lib/l10n/*.arb`). Do not remove or bypass localization.
+- **First screen**: Logo centered (220×220, animation), white background; after 3 seconds show the "Choose language" rectangle (Warm Sand). Tapping it opens the language sheet with logo **outside** the curtain (above the Warm Sand panel). Text color: dark black (`AppColors.darkBlack`). Do not change this flow.
+
+## Translations
+
+- All app strings must be translated in **all** languages in `lib/l10n/`. Use the same keys in every ARB file (`appTitle`, `chooseLanguage`, etc.). Default/template is `app_en.arb`. Do not remove existing ARB files or leave a language with missing keys.
+
+## Visual (locked)
+
+- Rectangles: Warm Sand (`AppColors.warmSand`). Success/verified: Forest Green (`AppColors.forestGreen`). Primary text: dark black (`AppColors.darkBlack`).
+
+Any new features must be added **without** changing the above.
