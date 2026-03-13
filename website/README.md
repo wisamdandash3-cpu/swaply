@@ -29,12 +29,10 @@ Then open `http://localhost:3000` (or 8080).
 
 ### Vercel / Netlify
 
-- **Vercel (موصى به)**: انشر من داخل مجلد الموقع حتى تُنشر الملفات الصحيحة:
-  ```bash
-  cd ~/swaply/website
-  vercel --prod
-  ```
-  إذا ربطت المشروع بـ GitHub، يمكن بدلاً من ذلك ضبط **Root Directory** على `website` في إعدادات المشروع على Vercel.
+- **Vercel (و getswaply.de مربوط بمشروع "swaply")**: كي تظهر التعديلات على www.getswaply.de:
+  1. مشروع **swaply** → **Settings** → **General** → **Root Directory** = `website` (ثم Save)
+  2. **Deployments** → آخر Production deployment → **⋯** → **Redeploy**
+  أو اعمل `git push` من المشروع؛ النشر من GitHub سيستخدم مجلد `website` بعد ضبط Root Directory.
 - **Netlify**: Publish directory = `website`, no build step.
 
 ### After app store links are ready
