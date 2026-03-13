@@ -1,0 +1,13 @@
+{
+  "name": "swaply-website",
+  "private": true,
+  "scripts": {
+    "start": "node server.js",
+    "serve": "node server.js",
+    "build": "node scripts/write-config.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "http-proxy-middleware": "^2.0.6"
+  }
+}
