@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -203,14 +205,19 @@ class _FeaturedProfileCardState extends State<_FeaturedProfileCard> {
     } catch (_) {}
     String promptText = '';
     for (final a in answers) {
-      if (a.itemType == 'text' && a.content.trim().length > 10 && a.content.trim().length < 120) {
-        promptText = a.content.trim();
-        break;
-      }
+      if (a.itemType != 'text') continue;
+      final display = _extractPromptDisplayText(a.content.trim());
+      if (display.isEmpty || display.length < 10 || display.length > 200) continue;
+      promptText = display.length > 120 ? '${display.substring(0, 120)}...' : display;
+      break;
     }
     if (promptText.isEmpty && answers.isNotEmpty) {
-      final first = answers.firstWhere((a) => a.itemType == 'text', orElse: () => answers.first);
-      promptText = first.content.length > 80 ? '${first.content.substring(0, 80)}...' : first.content;
+      final textAnswers = answers.where((a) => a.itemType == 'text');
+      if (textAnswers.isNotEmpty) {
+        final first = textAnswers.first;
+        final display = _extractPromptDisplayText(first.content);
+        promptText = display.length > 80 ? '${display.substring(0, 80)}...' : display;
+      }
     }
     if (mounted) {
       setState(() {
@@ -221,6 +228,18 @@ class _FeaturedProfileCardState extends State<_FeaturedProfileCard> {
         _loaded = true;
       });
     }
+  }
+
+  /// يستخرج نص العرض من محتوى قد يكون JSON مثل {"prompt_id":"p1","answer":"..."}.
+  static String _extractPromptDisplayText(String content) {
+    try {
+      final decoded = jsonDecode(content);
+      if (decoded is Map<String, dynamic>) {
+        final answer = decoded['answer']?.toString().trim();
+        if (answer != null && answer.isNotEmpty) return answer;
+      }
+    } catch (_) {}
+    return content;
   }
 
   @override

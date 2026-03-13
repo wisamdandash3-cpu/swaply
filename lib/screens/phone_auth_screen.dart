@@ -9,14 +9,12 @@ import '../pending_onboarding.dart';
 import '../services/profile_answer_service.dart';
 
 /// قائمة دول العالم لاختيار رمز الاتصال (تُستورد من country_dial_codes).
-final List<({String code, String dialCode, String flag})> kCountryCodes = kCountryDialCodes;
+final List<({String code, String dialCode, String flag})> kCountryCodes =
+    kCountryDialCodes;
 
 /// شاشة إدخال رقم الهاتف للتحقق (مثل الصورة المرجعية).
 class PhoneEntryScreen extends StatefulWidget {
-  const PhoneEntryScreen({
-    super.key,
-    this.pendingAnswers,
-  });
+  const PhoneEntryScreen({super.key, this.pendingAnswers});
 
   final List<String>? pendingAnswers;
 
@@ -46,7 +44,9 @@ class _PhoneEntryScreenState extends State<PhoneEntryScreen> {
     final full = _fullPhone;
     if (full.isEmpty || full.length < 10) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context).phoneNumberInvalid)),
+        SnackBar(
+          content: Text(AppLocalizations.of(context).phoneNumberInvalid),
+        ),
       );
       return;
     }
@@ -65,7 +65,9 @@ class _PhoneEntryScreenState extends State<PhoneEntryScreen> {
     } catch (e) {
       if (mounted) {
         final msg = e is AuthException ? e.message : e.toString();
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(msg)));
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -106,7 +108,8 @@ class _PhoneEntryScreenState extends State<PhoneEntryScreen> {
                     const SizedBox(height: 24),
                     Text(
                       l10n.whatsYourPhoneNumber,
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      style: Theme.of(context).textTheme.headlineSmall
+                          ?.copyWith(
                             fontWeight: FontWeight.bold,
                             color: AppColors.darkBlack,
                           ),
@@ -133,7 +136,9 @@ class _PhoneEntryScreenState extends State<PhoneEntryScreen> {
                                             padding: const EdgeInsets.all(12),
                                             child: Text(
                                               l10n.selectCountry,
-                                              style: Theme.of(context).textTheme.titleMedium,
+                                              style: Theme.of(
+                                                context,
+                                              ).textTheme.titleMedium,
                                             ),
                                           ),
                                           Expanded(
@@ -143,9 +148,15 @@ class _PhoneEntryScreenState extends State<PhoneEntryScreen> {
                                               itemBuilder: (_, i) {
                                                 final c = kCountryCodes[i];
                                                 return ListTile(
-                                                  leading: Text(c.flag, style: const TextStyle(fontSize: 24)),
-                                                  title: Text('${c.dialCode}'),
-                                                  onTap: () => Navigator.pop(ctx, i),
+                                                  leading: Text(
+                                                    c.flag,
+                                                    style: const TextStyle(
+                                                      fontSize: 24,
+                                                    ),
+                                                  ),
+                                                  title: Text(c.dialCode),
+                                                  onTap: () =>
+                                                      Navigator.pop(ctx, i),
                                                 );
                                               },
                                             ),
@@ -179,8 +190,10 @@ class _PhoneEntryScreenState extends State<PhoneEntryScreen> {
                                   ),
                                 ),
                                 const SizedBox(width: 4),
-                                const Icon(Icons.arrow_drop_down,
-                                    color: AppColors.darkBlack),
+                                const Icon(
+                                  Icons.arrow_drop_down,
+                                  color: AppColors.darkBlack,
+                                ),
                               ],
                             ),
                           ),
@@ -192,21 +205,31 @@ class _PhoneEntryScreenState extends State<PhoneEntryScreen> {
                             keyboardType: TextInputType.phone,
                             autofocus: true,
                             inputFormatters: [
-                              FilteringTextInputFormatter.allow(RegExp(r'[\d\s\-]')),
+                              FilteringTextInputFormatter.allow(
+                                RegExp(r'[\d\s\-]'),
+                              ),
                             ],
                             decoration: InputDecoration(
                               hintText: '123 456 7890',
                               border: UnderlineInputBorder(
                                 borderSide: BorderSide(
-                                    color: AppColors.darkBlack.withValues(alpha: 0.3)),
+                                  color: AppColors.darkBlack.withValues(
+                                    alpha: 0.3,
+                                  ),
+                                ),
                               ),
                               enabledBorder: UnderlineInputBorder(
                                 borderSide: BorderSide(
-                                    color: AppColors.darkBlack.withValues(alpha: 0.3)),
+                                  color: AppColors.darkBlack.withValues(
+                                    alpha: 0.3,
+                                  ),
+                                ),
                               ),
                               focusedBorder: const UnderlineInputBorder(
                                 borderSide: BorderSide(
-                                    color: AppColors.hingePurple, width: 2),
+                                  color: AppColors.hingePurple,
+                                  width: 2,
+                                ),
                               ),
                             ),
                             style: const TextStyle(
@@ -218,9 +241,7 @@ class _PhoneEntryScreenState extends State<PhoneEntryScreen> {
                         ),
                         const SizedBox(width: 12),
                         IconButton.filled(
-                          onPressed: _isLoading
-                              ? null
-                              : () => _sendOtp(),
+                          onPressed: _isLoading ? null : () => _sendOtp(),
                           icon: _isLoading
                               ? const SizedBox(
                                   width: 24,
@@ -242,9 +263,9 @@ class _PhoneEntryScreenState extends State<PhoneEntryScreen> {
                     Text(
                       l10n.phoneVerificationMessage,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: AppColors.darkBlack.withValues(alpha: 0.6),
-                            height: 1.4,
-                          ),
+                        color: AppColors.darkBlack.withValues(alpha: 0.6),
+                        height: 1.4,
+                      ),
                     ),
                     const SizedBox(height: 24),
                     GestureDetector(
@@ -275,11 +296,7 @@ class _PhoneEntryScreenState extends State<PhoneEntryScreen> {
 
 /// شاشة إدخال رمز التحقق (OTP) وإكمال تسجيل الدخول بالهاتف.
 class OtpVerifyScreen extends StatefulWidget {
-  const OtpVerifyScreen({
-    super.key,
-    required this.phone,
-    this.pendingAnswers,
-  });
+  const OtpVerifyScreen({super.key, required this.phone, this.pendingAnswers});
 
   final String phone;
   final List<String>? pendingAnswers;
@@ -356,7 +373,9 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen> {
     } catch (e) {
       if (mounted) {
         final msg = e is AuthException ? e.message : e.toString();
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(msg)));
         setState(() => _isLoading = false);
       }
     }
@@ -403,18 +422,16 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen> {
               Text(
                 l10n.enterVerificationCode,
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.darkBlack,
-                    ),
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.darkBlack,
+                ),
               ),
               const SizedBox(height: 32),
               TextField(
                 controller: _codeController,
                 keyboardType: TextInputType.number,
                 maxLength: 6,
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
-                ],
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 24,

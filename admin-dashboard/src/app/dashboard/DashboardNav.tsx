@@ -33,6 +33,7 @@ const navItems = [
   { href: '/dashboard/verification', label: 'موافقات التوثيق' },
   { href: '/dashboard/banned', label: 'المحظورون' },
   { href: '/dashboard/complaints', label: 'الشكاوى' },
+  { href: '/dashboard/broadcast', label: 'إرسال رسالة للجميع' },
 ];
 
 export default function DashboardNav() {

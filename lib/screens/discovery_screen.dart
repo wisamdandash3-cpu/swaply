@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
@@ -220,12 +221,19 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
     } catch (_) {}
   }
 
+  /// true = عرض الحسابات الوهمية دائماً في التطوير (الرئيسية).
+  static const bool _forceMockProfilesInDiscovery = true;
+
   Future<void> _loadDiscovery() async {
     if (!mounted) return;
     setState(() {
       _isLoading = true;
       _currentAnswers = null;
     });
+    if (kDebugMode && _forceMockProfilesInDiscovery) {
+      if (mounted) _showFallbackProfiles();
+      return;
+    }
     try {
       final ok = await _loadDiscoveryIds().timeout(
         const Duration(seconds: 8),

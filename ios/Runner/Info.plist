@@ -45,6 +45,8 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>io.flutter.embedded_views_preview</key>
+	<true/>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Swaply uses your location to show your area on your profile. Only the neighbourhood or city name is shown; we do not share your exact location.</string>
 	<key>NSPhotoLibraryUsageDescription</key>

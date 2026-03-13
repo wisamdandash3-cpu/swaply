@@ -455,6 +455,11 @@
     "swaplySubscription",
     "featureSendGifts",
     "tapToViewConversation",
+    "chatFilterTitle",
+    "chatFilterNewest",
+    "chatFilterOldest",
+    "chatFilterGiftsOnly",
+    "chatFilterUnreadOnly",
     "newMatchLabel",
     "block",
     "sendReport",
@@ -472,6 +477,8 @@
     "complaintAddEvidence",
     "complaintReasonRequired",
     "complaintEvidenceRequired",
+    "submitComplaint",
+    "submitComplaintDescription",
     "profile",
     "message",
     "profileLoadFailed",
@@ -556,7 +563,8 @@
     "messageCopied",
     "youCrushedWithSwaply",
     "swaplyTeam",
-    "swaplyWelcomeMessage"
+    "swaplyWelcomeMessage",
+    "swaplyWelcomeMessageWithName"
   ],
 
   "am": [
@@ -1015,6 +1023,11 @@
     "swaplySubscription",
     "featureSendGifts",
     "tapToViewConversation",
+    "chatFilterTitle",
+    "chatFilterNewest",
+    "chatFilterOldest",
+    "chatFilterGiftsOnly",
+    "chatFilterUnreadOnly",
     "newMatchLabel",
     "block",
     "sendReport",
@@ -1032,6 +1045,8 @@
     "complaintAddEvidence",
     "complaintReasonRequired",
     "complaintEvidenceRequired",
+    "submitComplaint",
+    "submitComplaintDescription",
     "profile",
     "message",
     "profileLoadFailed",
@@ -1116,7 +1131,8 @@
     "messageCopied",
     "youCrushedWithSwaply",
     "swaplyTeam",
-    "swaplyWelcomeMessage"
+    "swaplyWelcomeMessage",
+    "swaplyWelcomeMessageWithName"
   ],
 
   "bg": [
@@ -1575,6 +1591,11 @@
     "swaplySubscription",
     "featureSendGifts",
     "tapToViewConversation",
+    "chatFilterTitle",
+    "chatFilterNewest",
+    "chatFilterOldest",
+    "chatFilterGiftsOnly",
+    "chatFilterUnreadOnly",
     "newMatchLabel",
     "block",
     "sendReport",
@@ -1592,6 +1613,8 @@
     "complaintAddEvidence",
     "complaintReasonRequired",
     "complaintEvidenceRequired",
+    "submitComplaint",
+    "submitComplaintDescription",
     "profile",
     "message",
     "profileLoadFailed",
@@ -1676,7 +1699,8 @@
     "messageCopied",
     "youCrushedWithSwaply",
     "swaplyTeam",
-    "swaplyWelcomeMessage"
+    "swaplyWelcomeMessage",
+    "swaplyWelcomeMessageWithName"
   ],
 
   "bn": [
@@ -2135,6 +2159,11 @@
     "swaplySubscription",
     "featureSendGifts",
     "tapToViewConversation",
+    "chatFilterTitle",
+    "chatFilterNewest",
+    "chatFilterOldest",
+    "chatFilterGiftsOnly",
+    "chatFilterUnreadOnly",
     "newMatchLabel",
     "block",
     "sendReport",
@@ -2152,6 +2181,8 @@
     "complaintAddEvidence",
     "complaintReasonRequired",
     "complaintEvidenceRequired",
+    "submitComplaint",
+    "submitComplaintDescription",
     "profile",
     "message",
     "profileLoadFailed",
@@ -2236,7 +2267,8 @@
     "messageCopied",
     "youCrushedWithSwaply",
     "swaplyTeam",
-    "swaplyWelcomeMessage"
+    "swaplyWelcomeMessage",
+    "swaplyWelcomeMessageWithName"
   ],
 
   "ca": [
@@ -2695,6 +2727,11 @@
     "swaplySubscription",
     "featureSendGifts",
     "tapToViewConversation",
+    "chatFilterTitle",
+    "chatFilterNewest",
+    "chatFilterOldest",
+    "chatFilterGiftsOnly",
+    "chatFilterUnreadOnly",
     "newMatchLabel",
     "block",
     "sendReport",
@@ -2712,6 +2749,8 @@
     "complaintAddEvidence",
     "complaintReasonRequired",
     "complaintEvidenceRequired",
+    "submitComplaint",
+    "submitComplaintDescription",
     "profile",
     "message",
     "profileLoadFailed",
@@ -2796,7 +2835,8 @@
     "messageCopied",
     "youCrushedWithSwaply",
     "swaplyTeam",
-    "swaplyWelcomeMessage"
+    "swaplyWelcomeMessage",
+    "swaplyWelcomeMessageWithName"
   ],
 
   "cs": [
@@ -3255,6 +3295,11 @@
     "swaplySubscription",
     "featureSendGifts",
     "tapToViewConversation",
+    "chatFilterTitle",
+    "chatFilterNewest",
+    "chatFilterOldest",
+    "chatFilterGiftsOnly",
+    "chatFilterUnreadOnly",
     "newMatchLabel",
     "block",
     "sendReport",
@@ -3272,6 +3317,8 @@
     "complaintAddEvidence",
     "complaintReasonRequired",
     "complaintEvidenceRequired",
+    "submitComplaint",
+    "submitComplaintDescription",
     "profile",
     "message",
     "profileLoadFailed",
@@ -3356,7 +3403,8 @@
     "messageCopied",
     "youCrushedWithSwaply",
     "swaplyTeam",
-    "swaplyWelcomeMessage"
+    "swaplyWelcomeMessage",
+    "swaplyWelcomeMessageWithName"
   ],
 
   "da": [
@@ -3815,6 +3863,11 @@
     "swaplySubscription",
     "featureSendGifts",
     "tapToViewConversation",
+    "chatFilterTitle",
+    "chatFilterNewest",
+    "chatFilterOldest",
+    "chatFilterGiftsOnly",
+    "chatFilterUnreadOnly",
     "newMatchLabel",
     "block",
     "sendReport",
@@ -3832,6 +3885,8 @@
     "complaintAddEvidence",
     "complaintReasonRequired",
     "complaintEvidenceRequired",
+    "submitComplaint",
+    "submitComplaintDescription",
     "profile",
     "message",
     "profileLoadFailed",
@@ -3916,7 +3971,8 @@
     "messageCopied",
     "youCrushedWithSwaply",
     "swaplyTeam",
-    "swaplyWelcomeMessage"
+    "swaplyWelcomeMessage",
+    "swaplyWelcomeMessageWithName"
   ],
 
   "de": [
@@ -4362,6 +4418,11 @@
     "swaplySubscription",
     "featureSendGifts",
     "tapToViewConversation",
+    "chatFilterTitle",
+    "chatFilterNewest",
+    "chatFilterOldest",
+    "chatFilterGiftsOnly",
+    "chatFilterUnreadOnly",
     "newMatchLabel",
     "block",
     "sendReport",
@@ -4379,6 +4440,8 @@
     "complaintAddEvidence",
     "complaintReasonRequired",
     "complaintEvidenceRequired",
+    "submitComplaint",
+    "submitComplaintDescription",
     "profile",
     "message",
     "profileLoadFailed",
@@ -4463,7 +4526,8 @@
     "messageCopied",
     "youCrushedWithSwaply",
     "swaplyTeam",
-    "swaplyWelcomeMessage"
+    "swaplyWelcomeMessage",
+    "swaplyWelcomeMessageWithName"
   ],
 
   "el": [
@@ -4922,6 +4986,11 @@
     "swaplySubscription",
     "featureSendGifts",
     "tapToViewConversation",
+    "chatFilterTitle",
+    "chatFilterNewest",
+    "chatFilterOldest",
+    "chatFilterGiftsOnly",
+    "chatFilterUnreadOnly",
     "newMatchLabel",
     "block",
     "sendReport",
@@ -4939,6 +5008,8 @@
     "complaintAddEvidence",
     "complaintReasonRequired",
     "complaintEvidenceRequired",
+    "submitComplaint",
+    "submitComplaintDescription",
     "profile",
     "message",
     "profileLoadFailed",
@@ -5023,7 +5094,8 @@
     "messageCopied",
     "youCrushedWithSwaply",
     "swaplyTeam",
-    "swaplyWelcomeMessage"
+    "swaplyWelcomeMessage",
+    "swaplyWelcomeMessageWithName"
   ],
 
   "es": [
@@ -5482,6 +5554,11 @@
     "swaplySubscription",
     "featureSendGifts",
     "tapToViewConversation",
+    "chatFilterTitle",
+    "chatFilterNewest",
+    "chatFilterOldest",
+    "chatFilterGiftsOnly",
+    "chatFilterUnreadOnly",
     "newMatchLabel",
     "block",
     "sendReport",
@@ -5499,6 +5576,8 @@
     "complaintAddEvidence",
     "complaintReasonRequired",
     "complaintEvidenceRequired",
+    "submitComplaint",
+    "submitComplaintDescription",
     "profile",
     "message",
     "profileLoadFailed",
@@ -5583,7 +5662,8 @@
     "messageCopied",
     "youCrushedWithSwaply",
     "swaplyTeam",
-    "swaplyWelcomeMessage"
+    "swaplyWelcomeMessage",
+    "swaplyWelcomeMessageWithName"
   ],
 
   "eu": [
@@ -6042,6 +6122,11 @@
     "swaplySubscription",
     "featureSendGifts",
     "tapToViewConversation",
+    "chatFilterTitle",
+    "chatFilterNewest",
+    "chatFilterOldest",
+    "chatFilterGiftsOnly",
+    "chatFilterUnreadOnly",
     "newMatchLabel",
     "block",
     "sendReport",
@@ -6059,6 +6144,8 @@
     "complaintAddEvidence",
     "complaintReasonRequired",
     "complaintEvidenceRequired",
+    "submitComplaint",
+    "submitComplaintDescription",
     "profile",
     "message",
     "profileLoadFailed",
@@ -6143,7 +6230,8 @@
     "messageCopied",
     "youCrushedWithSwaply",
     "swaplyTeam",
-    "swaplyWelcomeMessage"
+    "swaplyWelcomeMessage",
+    "swaplyWelcomeMessageWithName"
   ],
 
   "fa": [
@@ -6602,6 +6690,11 @@
     "swaplySubscription",
     "featureSendGifts",
     "tapToViewConversation",
+    "chatFilterTitle",
+    "chatFilterNewest",
+    "chatFilterOldest",
+    "chatFilterGiftsOnly",
+    "chatFilterUnreadOnly",
     "newMatchLabel",
     "block",
     "sendReport",
@@ -6619,6 +6712,8 @@
     "complaintAddEvidence",
     "complaintReasonRequired",
     "complaintEvidenceRequired",
+    "submitComplaint",
+    "submitComplaintDescription",
     "profile",
     "message",
     "profileLoadFailed",
@@ -6703,7 +6798,8 @@
     "messageCopied",
     "youCrushedWithSwaply",
     "swaplyTeam",
-    "swaplyWelcomeMessage"
+    "swaplyWelcomeMessage",
+    "swaplyWelcomeMessageWithName"
   ],
 
   "fi": [
@@ -7162,6 +7258,11 @@
     "swaplySubscription",
     "featureSendGifts",
     "tapToViewConversation",
+    "chatFilterTitle",
+    "chatFilterNewest",
+    "chatFilterOldest",
+    "chatFilterGiftsOnly",
+    "chatFilterUnreadOnly",
     "newMatchLabel",
     "block",
     "sendReport",
@@ -7179,6 +7280,8 @@
     "complaintAddEvidence",
     "complaintReasonRequired",
     "complaintEvidenceRequired",
+    "submitComplaint",
+    "submitComplaintDescription",
     "profile",
     "message",
     "profileLoadFailed",
@@ -7263,7 +7366,8 @@
     "messageCopied",
     "youCrushedWithSwaply",
     "swaplyTeam",
-    "swaplyWelcomeMessage"
+    "swaplyWelcomeMessage",
+    "swaplyWelcomeMessageWithName"
   ],
 
   "fr": [
@@ -7722,6 +7826,11 @@
     "swaplySubscription",
     "featureSendGifts",
     "tapToViewConversation",
+    "chatFilterTitle",
+    "chatFilterNewest",
+    "chatFilterOldest",
+    "chatFilterGiftsOnly",
+    "chatFilterUnreadOnly",
     "newMatchLabel",
     "block",
     "sendReport",
@@ -7739,6 +7848,8 @@
     "complaintAddEvidence",
     "complaintReasonRequired",
     "complaintEvidenceRequired",
+    "submitComplaint",
+    "submitComplaintDescription",
     "profile",
     "message",
     "profileLoadFailed",
@@ -7823,7 +7934,8 @@
     "messageCopied",
     "youCrushedWithSwaply",
     "swaplyTeam",
-    "swaplyWelcomeMessage"
+    "swaplyWelcomeMessage",
+    "swaplyWelcomeMessageWithName"
   ],
 
   "gl": [
@@ -8282,6 +8394,11 @@
     "swaplySubscription",
     "featureSendGifts",
     "tapToViewConversation",
+    "chatFilterTitle",
+    "chatFilterNewest",
+    "chatFilterOldest",
+    "chatFilterGiftsOnly",
+    "chatFilterUnreadOnly",
     "newMatchLabel",
     "block",
     "sendReport",
@@ -8299,6 +8416,8 @@
     "complaintAddEvidence",
     "complaintReasonRequired",
     "complaintEvidenceRequired",
+    "submitComplaint",
+    "submitComplaintDescription",
     "profile",
     "message",
     "profileLoadFailed",
@@ -8383,7 +8502,8 @@
     "messageCopied",
     "youCrushedWithSwaply",
     "swaplyTeam",
-    "swaplyWelcomeMessage"
+    "swaplyWelcomeMessage",
+    "swaplyWelcomeMessageWithName"
   ],
 
   "gu": [
@@ -8842,6 +8962,11 @@
     "swaplySubscription",
     "featureSendGifts",
     "tapToViewConversation",
+    "chatFilterTitle",
+    "chatFilterNewest",
+    "chatFilterOldest",
+    "chatFilterGiftsOnly",
+    "chatFilterUnreadOnly",
     "newMatchLabel",
     "block",
     "sendReport",
@@ -8859,6 +8984,8 @@
     "complaintAddEvidence",
     "complaintReasonRequired",
     "complaintEvidenceRequired",
+    "submitComplaint",
+    "submitComplaintDescription",
     "profile",
     "message",
     "profileLoadFailed",
@@ -8943,7 +9070,8 @@
     "messageCopied",
     "youCrushedWithSwaply",
     "swaplyTeam",
-    "swaplyWelcomeMessage"
+    "swaplyWelcomeMessage",
+    "swaplyWelcomeMessageWithName"
   ],
 
   "ha": [
@@ -9402,6 +9530,11 @@
     "swaplySubscription",
     "featureSendGifts",
     "tapToViewConversation",
+    "chatFilterTitle",
+    "chatFilterNewest",
+    "chatFilterOldest",
+    "chatFilterGiftsOnly",
+    "chatFilterUnreadOnly",
     "newMatchLabel",
     "block",
     "sendReport",
@@ -9419,6 +9552,8 @@
     "complaintAddEvidence",
     "complaintReasonRequired",
     "complaintEvidenceRequired",
+    "submitComplaint",
+    "submitComplaintDescription",
     "profile",
     "message",
     "profileLoadFailed",
@@ -9503,7 +9638,8 @@
     "messageCopied",
     "youCrushedWithSwaply",
     "swaplyTeam",
-    "swaplyWelcomeMessage"
+    "swaplyWelcomeMessage",
+    "swaplyWelcomeMessageWithName"
   ],
 
   "he": [
@@ -9962,6 +10098,11 @@
     "swaplySubscription",
     "featureSendGifts",
     "tapToViewConversation",
+    "chatFilterTitle",
+    "chatFilterNewest",
+    "chatFilterOldest",
+    "chatFilterGiftsOnly",
+    "chatFilterUnreadOnly",
     "newMatchLabel",
     "block",
     "sendReport",
@@ -9979,6 +10120,8 @@
     "complaintAddEvidence",
     "complaintReasonRequired",
     "complaintEvidenceRequired",
+    "submitComplaint",
+    "submitComplaintDescription",
     "profile",
     "message",
     "profileLoadFailed",
@@ -10063,7 +10206,8 @@
     "messageCopied",
     "youCrushedWithSwaply",
     "swaplyTeam",
-    "swaplyWelcomeMessage"
+    "swaplyWelcomeMessage",
+    "swaplyWelcomeMessageWithName"
   ],
 
   "hi": [
@@ -10522,6 +10666,11 @@
     "swaplySubscription",
     "featureSendGifts",
     "tapToViewConversation",
+    "chatFilterTitle",
+    "chatFilterNewest",
+    "chatFilterOldest",
+    "chatFilterGiftsOnly",
+    "chatFilterUnreadOnly",
     "newMatchLabel",
     "block",
     "sendReport",
@@ -10539,6 +10688,8 @@
     "complaintAddEvidence",
     "complaintReasonRequired",
     "complaintEvidenceRequired",
+    "submitComplaint",
+    "submitComplaintDescription",
     "profile",
     "message",
     "profileLoadFailed",
@@ -10623,7 +10774,8 @@
     "messageCopied",
     "youCrushedWithSwaply",
     "swaplyTeam",
-    "swaplyWelcomeMessage"
+    "swaplyWelcomeMessage",
+    "swaplyWelcomeMessageWithName"
   ],
 
   "hr": [
@@ -11082,6 +11234,11 @@
     "swaplySubscription",
     "featureSendGifts",
     "tapToViewConversation",
+    "chatFilterTitle",
+    "chatFilterNewest",
+    "chatFilterOldest",
+    "chatFilterGiftsOnly",
+    "chatFilterUnreadOnly",
     "newMatchLabel",
     "block",
     "sendReport",
@@ -11099,6 +11256,8 @@
     "complaintAddEvidence",
     "complaintReasonRequired",
     "complaintEvidenceRequired",
+    "submitComplaint",
+    "submitComplaintDescription",
     "profile",
     "message",
     "profileLoadFailed",
@@ -11183,7 +11342,8 @@
     "messageCopied",
     "youCrushedWithSwaply",
     "swaplyTeam",
-    "swaplyWelcomeMessage"
+    "swaplyWelcomeMessage",
+    "swaplyWelcomeMessageWithName"
   ],
 
   "hu": [
@@ -11642,6 +11802,11 @@
     "swaplySubscription",
     "featureSendGifts",
     "tapToViewConversation",
+    "chatFilterTitle",
+    "chatFilterNewest",
+    "chatFilterOldest",
+    "chatFilterGiftsOnly",
+    "chatFilterUnreadOnly",
     "newMatchLabel",
     "block",
     "sendReport",
@@ -11659,6 +11824,8 @@
     "complaintAddEvidence",
     "complaintReasonRequired",
     "complaintEvidenceRequired",
+    "submitComplaint",
+    "submitComplaintDescription",
     "profile",
     "message",
     "profileLoadFailed",
@@ -11743,7 +11910,8 @@
     "messageCopied",
     "youCrushedWithSwaply",
     "swaplyTeam",
-    "swaplyWelcomeMessage"
+    "swaplyWelcomeMessage",
+    "swaplyWelcomeMessageWithName"
   ],
 
   "id": [
@@ -12202,6 +12370,11 @@
     "swaplySubscription",
     "featureSendGifts",
     "tapToViewConversation",
+    "chatFilterTitle",
+    "chatFilterNewest",
+    "chatFilterOldest",
+    "chatFilterGiftsOnly",
+    "chatFilterUnreadOnly",
     "newMatchLabel",
     "block",
     "sendReport",
@@ -12219,6 +12392,8 @@
     "complaintAddEvidence",
     "complaintReasonRequired",
     "complaintEvidenceRequired",
+    "submitComplaint",
+    "submitComplaintDescription",
     "profile",
     "message",
     "profileLoadFailed",
@@ -12303,7 +12478,8 @@
     "messageCopied",
     "youCrushedWithSwaply",
     "swaplyTeam",
-    "swaplyWelcomeMessage"
+    "swaplyWelcomeMessage",
+    "swaplyWelcomeMessageWithName"
   ],
 
   "ig": [
@@ -12762,6 +12938,11 @@
     "swaplySubscription",
     "featureSendGifts",
     "tapToViewConversation",
+    "chatFilterTitle",
+    "chatFilterNewest",
+    "chatFilterOldest",
+    "chatFilterGiftsOnly",
+    "chatFilterUnreadOnly",
     "newMatchLabel",
     "block",
     "sendReport",
@@ -12779,6 +12960,8 @@
     "complaintAddEvidence",
     "complaintReasonRequired",
     "complaintEvidenceRequired",
+    "submitComplaint",
+    "submitComplaintDescription",
     "profile",
     "message",
     "profileLoadFailed",
@@ -12863,7 +13046,8 @@
     "messageCopied",
     "youCrushedWithSwaply",
     "swaplyTeam",
-    "swaplyWelcomeMessage"
+    "swaplyWelcomeMessage",
+    "swaplyWelcomeMessageWithName"
   ],
 
   "it": [
@@ -13322,6 +13506,11 @@
     "swaplySubscription",
     "featureSendGifts",
     "tapToViewConversation",
+    "chatFilterTitle",
+    "chatFilterNewest",
+    "chatFilterOldest",
+    "chatFilterGiftsOnly",
+    "chatFilterUnreadOnly",
     "newMatchLabel",
     "block",
     "sendReport",
@@ -13339,6 +13528,8 @@
     "complaintAddEvidence",
     "complaintReasonRequired",
     "complaintEvidenceRequired",
+    "submitComplaint",
+    "submitComplaintDescription",
     "profile",
     "message",
     "profileLoadFailed",
@@ -13423,7 +13614,8 @@
     "messageCopied",
     "youCrushedWithSwaply",
     "swaplyTeam",
-    "swaplyWelcomeMessage"
+    "swaplyWelcomeMessage",
+    "swaplyWelcomeMessageWithName"
   ],
 
   "ja": [
@@ -13882,6 +14074,11 @@
     "swaplySubscription",
     "featureSendGifts",
     "tapToViewConversation",
+    "chatFilterTitle",
+    "chatFilterNewest",
+    "chatFilterOldest",
+    "chatFilterGiftsOnly",
+    "chatFilterUnreadOnly",
     "newMatchLabel",
     "block",
     "sendReport",
@@ -13899,6 +14096,8 @@
     "complaintAddEvidence",
     "complaintReasonRequired",
     "complaintEvidenceRequired",
+    "submitComplaint",
+    "submitComplaintDescription",
     "profile",
     "message",
     "profileLoadFailed",
@@ -13983,7 +14182,8 @@
     "messageCopied",
     "youCrushedWithSwaply",
     "swaplyTeam",
-    "swaplyWelcomeMessage"
+    "swaplyWelcomeMessage",
+    "swaplyWelcomeMessageWithName"
   ],
 
   "kn": [
@@ -14442,6 +14642,11 @@
     "swaplySubscription",
     "featureSendGifts",
     "tapToViewConversation",
+    "chatFilterTitle",
+    "chatFilterNewest",
+    "chatFilterOldest",
+    "chatFilterGiftsOnly",
+    "chatFilterUnreadOnly",
     "newMatchLabel",
     "block",
     "sendReport",
@@ -14459,6 +14664,8 @@
     "complaintAddEvidence",
     "complaintReasonRequired",
     "complaintEvidenceRequired",
+    "submitComplaint",
+    "submitComplaintDescription",
     "profile",
     "message",
     "profileLoadFailed",
@@ -14543,7 +14750,8 @@
     "messageCopied",
     "youCrushedWithSwaply",
     "swaplyTeam",
-    "swaplyWelcomeMessage"
+    "swaplyWelcomeMessage",
+    "swaplyWelcomeMessageWithName"
   ],
 
   "ko": [
@@ -15002,6 +15210,11 @@
     "swaplySubscription",
     "featureSendGifts",
     "tapToViewConversation",
+    "chatFilterTitle",
+    "chatFilterNewest",
+    "chatFilterOldest",
+    "chatFilterGiftsOnly",
+    "chatFilterUnreadOnly",
     "newMatchLabel",
     "block",
     "sendReport",
@@ -15019,6 +15232,8 @@
     "complaintAddEvidence",
     "complaintReasonRequired",
     "complaintEvidenceRequired",
+    "submitComplaint",
+    "submitComplaintDescription",
     "profile",
     "message",
     "profileLoadFailed",
@@ -15103,7 +15318,8 @@
     "messageCopied",
     "youCrushedWithSwaply",
     "swaplyTeam",
-    "swaplyWelcomeMessage"
+    "swaplyWelcomeMessage",
+    "swaplyWelcomeMessageWithName"
   ],
 
   "ml": [
@@ -15562,6 +15778,11 @@
     "swaplySubscription",
     "featureSendGifts",
     "tapToViewConversation",
+    "chatFilterTitle",
+    "chatFilterNewest",
+    "chatFilterOldest",
+    "chatFilterGiftsOnly",
+    "chatFilterUnreadOnly",
     "newMatchLabel",
     "block",
     "sendReport",
@@ -15579,6 +15800,8 @@
     "complaintAddEvidence",
     "complaintReasonRequired",
     "complaintEvidenceRequired",
+    "submitComplaint",
+    "submitComplaintDescription",
     "profile",
     "message",
     "profileLoadFailed",
@@ -15663,7 +15886,8 @@
     "messageCopied",
     "youCrushedWithSwaply",
     "swaplyTeam",
-    "swaplyWelcomeMessage"
+    "swaplyWelcomeMessage",
+    "swaplyWelcomeMessageWithName"
   ],
 
   "mr": [
@@ -16122,6 +16346,11 @@
     "swaplySubscription",
     "featureSendGifts",
     "tapToViewConversation",
+    "chatFilterTitle",
+    "chatFilterNewest",
+    "chatFilterOldest",
+    "chatFilterGiftsOnly",
+    "chatFilterUnreadOnly",
     "newMatchLabel",
     "block",
     "sendReport",
@@ -16139,6 +16368,8 @@
     "complaintAddEvidence",
     "complaintReasonRequired",
     "complaintEvidenceRequired",
+    "submitComplaint",
+    "submitComplaintDescription",
     "profile",
     "message",
     "profileLoadFailed",
@@ -16223,7 +16454,8 @@
     "messageCopied",
     "youCrushedWithSwaply",
     "swaplyTeam",
-    "swaplyWelcomeMessage"
+    "swaplyWelcomeMessage",
+    "swaplyWelcomeMessageWithName"
   ],
 
   "ms": [
@@ -16682,6 +16914,11 @@
     "swaplySubscription",
     "featureSendGifts",
     "tapToViewConversation",
+    "chatFilterTitle",
+    "chatFilterNewest",
+    "chatFilterOldest",
+    "chatFilterGiftsOnly",
+    "chatFilterUnreadOnly",
     "newMatchLabel",
     "block",
     "sendReport",
@@ -16699,6 +16936,8 @@
     "complaintAddEvidence",
     "complaintReasonRequired",
     "complaintEvidenceRequired",
+    "submitComplaint",
+    "submitComplaintDescription",
     "profile",
     "message",
     "profileLoadFailed",
@@ -16783,7 +17022,8 @@
     "messageCopied",
     "youCrushedWithSwaply",
     "swaplyTeam",
-    "swaplyWelcomeMessage"
+    "swaplyWelcomeMessage",
+    "swaplyWelcomeMessageWithName"
   ],
 
   "nl": [
@@ -17242,6 +17482,11 @@
     "swaplySubscription",
     "featureSendGifts",
     "tapToViewConversation",
+    "chatFilterTitle",
+    "chatFilterNewest",
+    "chatFilterOldest",
+    "chatFilterGiftsOnly",
+    "chatFilterUnreadOnly",
     "newMatchLabel",
     "block",
     "sendReport",
@@ -17259,6 +17504,8 @@
     "complaintAddEvidence",
     "complaintReasonRequired",
     "complaintEvidenceRequired",
+    "submitComplaint",
+    "submitComplaintDescription",
     "profile",
     "message",
     "profileLoadFailed",
@@ -17343,7 +17590,8 @@
     "messageCopied",
     "youCrushedWithSwaply",
     "swaplyTeam",
-    "swaplyWelcomeMessage"
+    "swaplyWelcomeMessage",
+    "swaplyWelcomeMessageWithName"
   ],
 
   "no": [
@@ -17802,6 +18050,11 @@
     "swaplySubscription",
     "featureSendGifts",
     "tapToViewConversation",
+    "chatFilterTitle",
+    "chatFilterNewest",
+    "chatFilterOldest",
+    "chatFilterGiftsOnly",
+    "chatFilterUnreadOnly",
     "newMatchLabel",
     "block",
     "sendReport",
@@ -17819,6 +18072,8 @@
     "complaintAddEvidence",
     "complaintReasonRequired",
     "complaintEvidenceRequired",
+    "submitComplaint",
+    "submitComplaintDescription",
     "profile",
     "message",
     "profileLoadFailed",
@@ -17903,7 +18158,8 @@
     "messageCopied",
     "youCrushedWithSwaply",
     "swaplyTeam",
-    "swaplyWelcomeMessage"
+    "swaplyWelcomeMessage",
+    "swaplyWelcomeMessageWithName"
   ],
 
   "pa": [
@@ -18362,6 +18618,11 @@
     "swaplySubscription",
     "featureSendGifts",
     "tapToViewConversation",
+    "chatFilterTitle",
+    "chatFilterNewest",
+    "chatFilterOldest",
+    "chatFilterGiftsOnly",
+    "chatFilterUnreadOnly",
     "newMatchLabel",
     "block",
     "sendReport",
@@ -18379,6 +18640,8 @@
     "complaintAddEvidence",
     "complaintReasonRequired",
     "complaintEvidenceRequired",
+    "submitComplaint",
+    "submitComplaintDescription",
     "profile",
     "message",
     "profileLoadFailed",
@@ -18463,7 +18726,8 @@
     "messageCopied",
     "youCrushedWithSwaply",
     "swaplyTeam",
-    "swaplyWelcomeMessage"
+    "swaplyWelcomeMessage",
+    "swaplyWelcomeMessageWithName"
   ],
 
   "pl": [
@@ -18922,6 +19186,11 @@
     "swaplySubscription",
     "featureSendGifts",
     "tapToViewConversation",
+    "chatFilterTitle",
+    "chatFilterNewest",
+    "chatFilterOldest",
+    "chatFilterGiftsOnly",
+    "chatFilterUnreadOnly",
     "newMatchLabel",
     "block",
     "sendReport",
@@ -18939,6 +19208,8 @@
     "complaintAddEvidence",
     "complaintReasonRequired",
     "complaintEvidenceRequired",
+    "submitComplaint",
+    "submitComplaintDescription",
     "profile",
     "message",
     "profileLoadFailed",
@@ -19023,7 +19294,8 @@
     "messageCopied",
     "youCrushedWithSwaply",
     "swaplyTeam",
-    "swaplyWelcomeMessage"
+    "swaplyWelcomeMessage",
+    "swaplyWelcomeMessageWithName"
   ],
 
   "pt": [
@@ -19482,6 +19754,11 @@
     "swaplySubscription",
     "featureSendGifts",
     "tapToViewConversation",
+    "chatFilterTitle",
+    "chatFilterNewest",
+    "chatFilterOldest",
+    "chatFilterGiftsOnly",
+    "chatFilterUnreadOnly",
     "newMatchLabel",
     "block",
     "sendReport",
@@ -19499,6 +19776,8 @@
     "complaintAddEvidence",
     "complaintReasonRequired",
     "complaintEvidenceRequired",
+    "submitComplaint",
+    "submitComplaintDescription",
     "profile",
     "message",
     "profileLoadFailed",
@@ -19583,7 +19862,8 @@
     "messageCopied",
     "youCrushedWithSwaply",
     "swaplyTeam",
-    "swaplyWelcomeMessage"
+    "swaplyWelcomeMessage",
+    "swaplyWelcomeMessageWithName"
   ],
 
   "ro": [
@@ -20042,6 +20322,11 @@
     "swaplySubscription",
     "featureSendGifts",
     "tapToViewConversation",
+    "chatFilterTitle",
+    "chatFilterNewest",
+    "chatFilterOldest",
+    "chatFilterGiftsOnly",
+    "chatFilterUnreadOnly",
     "newMatchLabel",
     "block",
     "sendReport",
@@ -20059,6 +20344,8 @@
     "complaintAddEvidence",
     "complaintReasonRequired",
     "complaintEvidenceRequired",
+    "submitComplaint",
+    "submitComplaintDescription",
     "profile",
     "message",
     "profileLoadFailed",
@@ -20143,7 +20430,8 @@
     "messageCopied",
     "youCrushedWithSwaply",
     "swaplyTeam",
-    "swaplyWelcomeMessage"
+    "swaplyWelcomeMessage",
+    "swaplyWelcomeMessageWithName"
   ],
 
   "ru": [
@@ -20602,6 +20890,11 @@
     "swaplySubscription",
     "featureSendGifts",
     "tapToViewConversation",
+    "chatFilterTitle",
+    "chatFilterNewest",
+    "chatFilterOldest",
+    "chatFilterGiftsOnly",
+    "chatFilterUnreadOnly",
     "newMatchLabel",
     "block",
     "sendReport",
@@ -20619,6 +20912,8 @@
     "complaintAddEvidence",
     "complaintReasonRequired",
     "complaintEvidenceRequired",
+    "submitComplaint",
+    "submitComplaintDescription",
     "profile",
     "message",
     "profileLoadFailed",
@@ -20703,7 +20998,8 @@
     "messageCopied",
     "youCrushedWithSwaply",
     "swaplyTeam",
-    "swaplyWelcomeMessage"
+    "swaplyWelcomeMessage",
+    "swaplyWelcomeMessageWithName"
   ],
 
   "sk": [
@@ -21162,6 +21458,11 @@
     "swaplySubscription",
     "featureSendGifts",
     "tapToViewConversation",
+    "chatFilterTitle",
+    "chatFilterNewest",
+    "chatFilterOldest",
+    "chatFilterGiftsOnly",
+    "chatFilterUnreadOnly",
     "newMatchLabel",
     "block",
     "sendReport",
@@ -21179,6 +21480,8 @@
     "complaintAddEvidence",
     "complaintReasonRequired",
     "complaintEvidenceRequired",
+    "submitComplaint",
+    "submitComplaintDescription",
     "profile",
     "message",
     "profileLoadFailed",
@@ -21263,7 +21566,8 @@
     "messageCopied",
     "youCrushedWithSwaply",
     "swaplyTeam",
-    "swaplyWelcomeMessage"
+    "swaplyWelcomeMessage",
+    "swaplyWelcomeMessageWithName"
   ],
 
   "sr": [
@@ -21722,6 +22026,11 @@
     "swaplySubscription",
     "featureSendGifts",
     "tapToViewConversation",
+    "chatFilterTitle",
+    "chatFilterNewest",
+    "chatFilterOldest",
+    "chatFilterGiftsOnly",
+    "chatFilterUnreadOnly",
     "newMatchLabel",
     "block",
     "sendReport",
@@ -21739,6 +22048,8 @@
     "complaintAddEvidence",
     "complaintReasonRequired",
     "complaintEvidenceRequired",
+    "submitComplaint",
+    "submitComplaintDescription",
     "profile",
     "message",
     "profileLoadFailed",
@@ -21823,7 +22134,8 @@
     "messageCopied",
     "youCrushedWithSwaply",
     "swaplyTeam",
-    "swaplyWelcomeMessage"
+    "swaplyWelcomeMessage",
+    "swaplyWelcomeMessageWithName"
   ],
 
   "sv": [
@@ -22282,6 +22594,11 @@
     "swaplySubscription",
     "featureSendGifts",
     "tapToViewConversation",
+    "chatFilterTitle",
+    "chatFilterNewest",
+    "chatFilterOldest",
+    "chatFilterGiftsOnly",
+    "chatFilterUnreadOnly",
     "newMatchLabel",
     "block",
     "sendReport",
@@ -22299,6 +22616,8 @@
     "complaintAddEvidence",
     "complaintReasonRequired",
     "complaintEvidenceRequired",
+    "submitComplaint",
+    "submitComplaintDescription",
     "profile",
     "message",
     "profileLoadFailed",
@@ -22383,7 +22702,8 @@
     "messageCopied",
     "youCrushedWithSwaply",
     "swaplyTeam",
-    "swaplyWelcomeMessage"
+    "swaplyWelcomeMessage",
+    "swaplyWelcomeMessageWithName"
   ],
 
   "sw": [
@@ -22842,6 +23162,11 @@
     "swaplySubscription",
     "featureSendGifts",
     "tapToViewConversation",
+    "chatFilterTitle",
+    "chatFilterNewest",
+    "chatFilterOldest",
+    "chatFilterGiftsOnly",
+    "chatFilterUnreadOnly",
     "newMatchLabel",
     "block",
     "sendReport",
@@ -22859,6 +23184,8 @@
     "complaintAddEvidence",
     "complaintReasonRequired",
     "complaintEvidenceRequired",
+    "submitComplaint",
+    "submitComplaintDescription",
     "profile",
     "message",
     "profileLoadFailed",
@@ -22943,7 +23270,8 @@
     "messageCopied",
     "youCrushedWithSwaply",
     "swaplyTeam",
-    "swaplyWelcomeMessage"
+    "swaplyWelcomeMessage",
+    "swaplyWelcomeMessageWithName"
   ],
 
   "ta": [
@@ -23402,6 +23730,11 @@
     "swaplySubscription",
     "featureSendGifts",
     "tapToViewConversation",
+    "chatFilterTitle",
+    "chatFilterNewest",
+    "chatFilterOldest",
+    "chatFilterGiftsOnly",
+    "chatFilterUnreadOnly",
     "newMatchLabel",
     "block",
     "sendReport",
@@ -23419,6 +23752,8 @@
     "complaintAddEvidence",
     "complaintReasonRequired",
     "complaintEvidenceRequired",
+    "submitComplaint",
+    "submitComplaintDescription",
     "profile",
     "message",
     "profileLoadFailed",
@@ -23503,7 +23838,8 @@
     "messageCopied",
     "youCrushedWithSwaply",
     "swaplyTeam",
-    "swaplyWelcomeMessage"
+    "swaplyWelcomeMessage",
+    "swaplyWelcomeMessageWithName"
   ],
 
   "te": [
@@ -23962,6 +24298,11 @@
     "swaplySubscription",
     "featureSendGifts",
     "tapToViewConversation",
+    "chatFilterTitle",
+    "chatFilterNewest",
+    "chatFilterOldest",
+    "chatFilterGiftsOnly",
+    "chatFilterUnreadOnly",
     "newMatchLabel",
     "block",
     "sendReport",
@@ -23979,6 +24320,8 @@
     "complaintAddEvidence",
     "complaintReasonRequired",
     "complaintEvidenceRequired",
+    "submitComplaint",
+    "submitComplaintDescription",
     "profile",
     "message",
     "profileLoadFailed",
@@ -24063,7 +24406,8 @@
     "messageCopied",
     "youCrushedWithSwaply",
     "swaplyTeam",
-    "swaplyWelcomeMessage"
+    "swaplyWelcomeMessage",
+    "swaplyWelcomeMessageWithName"
   ],
 
   "th": [
@@ -24522,6 +24866,11 @@
     "swaplySubscription",
     "featureSendGifts",
     "tapToViewConversation",
+    "chatFilterTitle",
+    "chatFilterNewest",
+    "chatFilterOldest",
+    "chatFilterGiftsOnly",
+    "chatFilterUnreadOnly",
     "newMatchLabel",
     "block",
     "sendReport",
@@ -24539,6 +24888,8 @@
     "complaintAddEvidence",
     "complaintReasonRequired",
     "complaintEvidenceRequired",
+    "submitComplaint",
+    "submitComplaintDescription",
     "profile",
     "message",
     "profileLoadFailed",
@@ -24623,7 +24974,8 @@
     "messageCopied",
     "youCrushedWithSwaply",
     "swaplyTeam",
-    "swaplyWelcomeMessage"
+    "swaplyWelcomeMessage",
+    "swaplyWelcomeMessageWithName"
   ],
 
   "tl": [
@@ -25082,6 +25434,11 @@
     "swaplySubscription",
     "featureSendGifts",
     "tapToViewConversation",
+    "chatFilterTitle",
+    "chatFilterNewest",
+    "chatFilterOldest",
+    "chatFilterGiftsOnly",
+    "chatFilterUnreadOnly",
     "newMatchLabel",
     "block",
     "sendReport",
@@ -25099,6 +25456,8 @@
     "complaintAddEvidence",
     "complaintReasonRequired",
     "complaintEvidenceRequired",
+    "submitComplaint",
+    "submitComplaintDescription",
     "profile",
     "message",
     "profileLoadFailed",
@@ -25183,7 +25542,8 @@
     "messageCopied",
     "youCrushedWithSwaply",
     "swaplyTeam",
-    "swaplyWelcomeMessage"
+    "swaplyWelcomeMessage",
+    "swaplyWelcomeMessageWithName"
   ],
 
   "tr": [
@@ -25642,6 +26002,11 @@
     "swaplySubscription",
     "featureSendGifts",
     "tapToViewConversation",
+    "chatFilterTitle",
+    "chatFilterNewest",
+    "chatFilterOldest",
+    "chatFilterGiftsOnly",
+    "chatFilterUnreadOnly",
     "newMatchLabel",
     "block",
     "sendReport",
@@ -25659,6 +26024,8 @@
     "complaintAddEvidence",
     "complaintReasonRequired",
     "complaintEvidenceRequired",
+    "submitComplaint",
+    "submitComplaintDescription",
     "profile",
     "message",
     "profileLoadFailed",
@@ -25743,7 +26110,8 @@
     "messageCopied",
     "youCrushedWithSwaply",
     "swaplyTeam",
-    "swaplyWelcomeMessage"
+    "swaplyWelcomeMessage",
+    "swaplyWelcomeMessageWithName"
   ],
 
   "uk": [
@@ -26202,6 +26570,11 @@
     "swaplySubscription",
     "featureSendGifts",
     "tapToViewConversation",
+    "chatFilterTitle",
+    "chatFilterNewest",
+    "chatFilterOldest",
+    "chatFilterGiftsOnly",
+    "chatFilterUnreadOnly",
     "newMatchLabel",
     "block",
     "sendReport",
@@ -26219,6 +26592,8 @@
     "complaintAddEvidence",
     "complaintReasonRequired",
     "complaintEvidenceRequired",
+    "submitComplaint",
+    "submitComplaintDescription",
     "profile",
     "message",
     "profileLoadFailed",
@@ -26303,7 +26678,8 @@
     "messageCopied",
     "youCrushedWithSwaply",
     "swaplyTeam",
-    "swaplyWelcomeMessage"
+    "swaplyWelcomeMessage",
+    "swaplyWelcomeMessageWithName"
   ],
 
   "ur": [
@@ -26762,6 +27138,11 @@
     "swaplySubscription",
     "featureSendGifts",
     "tapToViewConversation",
+    "chatFilterTitle",
+    "chatFilterNewest",
+    "chatFilterOldest",
+    "chatFilterGiftsOnly",
+    "chatFilterUnreadOnly",
     "newMatchLabel",
     "block",
     "sendReport",
@@ -26779,6 +27160,8 @@
     "complaintAddEvidence",
     "complaintReasonRequired",
     "complaintEvidenceRequired",
+    "submitComplaint",
+    "submitComplaintDescription",
     "profile",
     "message",
     "profileLoadFailed",
@@ -26863,7 +27246,8 @@
     "messageCopied",
     "youCrushedWithSwaply",
     "swaplyTeam",
-    "swaplyWelcomeMessage"
+    "swaplyWelcomeMessage",
+    "swaplyWelcomeMessageWithName"
   ],
 
   "vi": [
@@ -27322,6 +27706,11 @@
     "swaplySubscription",
     "featureSendGifts",
     "tapToViewConversation",
+    "chatFilterTitle",
+    "chatFilterNewest",
+    "chatFilterOldest",
+    "chatFilterGiftsOnly",
+    "chatFilterUnreadOnly",
     "newMatchLabel",
     "block",
     "sendReport",
@@ -27339,6 +27728,8 @@
     "complaintAddEvidence",
     "complaintReasonRequired",
     "complaintEvidenceRequired",
+    "submitComplaint",
+    "submitComplaintDescription",
     "profile",
     "message",
     "profileLoadFailed",
@@ -27423,7 +27814,8 @@
     "messageCopied",
     "youCrushedWithSwaply",
     "swaplyTeam",
-    "swaplyWelcomeMessage"
+    "swaplyWelcomeMessage",
+    "swaplyWelcomeMessageWithName"
   ],
 
   "yo": [
@@ -27882,6 +28274,11 @@
     "swaplySubscription",
     "featureSendGifts",
     "tapToViewConversation",
+    "chatFilterTitle",
+    "chatFilterNewest",
+    "chatFilterOldest",
+    "chatFilterGiftsOnly",
+    "chatFilterUnreadOnly",
     "newMatchLabel",
     "block",
     "sendReport",
@@ -27899,6 +28296,8 @@
     "complaintAddEvidence",
     "complaintReasonRequired",
     "complaintEvidenceRequired",
+    "submitComplaint",
+    "submitComplaintDescription",
     "profile",
     "message",
     "profileLoadFailed",
@@ -27983,7 +28382,8 @@
     "messageCopied",
     "youCrushedWithSwaply",
     "swaplyTeam",
-    "swaplyWelcomeMessage"
+    "swaplyWelcomeMessage",
+    "swaplyWelcomeMessageWithName"
   ],
 
   "zh": [
@@ -28442,6 +28842,11 @@
     "swaplySubscription",
     "featureSendGifts",
     "tapToViewConversation",
+    "chatFilterTitle",
+    "chatFilterNewest",
+    "chatFilterOldest",
+    "chatFilterGiftsOnly",
+    "chatFilterUnreadOnly",
     "newMatchLabel",
     "block",
     "sendReport",
@@ -28459,6 +28864,8 @@
     "complaintAddEvidence",
     "complaintReasonRequired",
     "complaintEvidenceRequired",
+    "submitComplaint",
+    "submitComplaintDescription",
     "profile",
     "message",
     "profileLoadFailed",
@@ -28543,7 +28950,8 @@
     "messageCopied",
     "youCrushedWithSwaply",
     "swaplyTeam",
-    "swaplyWelcomeMessage"
+    "swaplyWelcomeMessage",
+    "swaplyWelcomeMessageWithName"
   ],
 
   "zu": [
@@ -29002,6 +29410,11 @@
     "swaplySubscription",
     "featureSendGifts",
     "tapToViewConversation",
+    "chatFilterTitle",
+    "chatFilterNewest",
+    "chatFilterOldest",
+    "chatFilterGiftsOnly",
+    "chatFilterUnreadOnly",
     "newMatchLabel",
     "block",
     "sendReport",
@@ -29019,6 +29432,8 @@
     "complaintAddEvidence",
     "complaintReasonRequired",
     "complaintEvidenceRequired",
+    "submitComplaint",
+    "submitComplaintDescription",
     "profile",
     "message",
     "profileLoadFailed",
@@ -29103,6 +29518,7 @@
     "messageCopied",
     "youCrushedWithSwaply",
     "swaplyTeam",
-    "swaplyWelcomeMessage"
+    "swaplyWelcomeMessage",
+    "swaplyWelcomeMessageWithName"
   ]
 }

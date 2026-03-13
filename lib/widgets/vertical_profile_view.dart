@@ -25,6 +25,8 @@ import 'ring_icon_widget.dart';
 import '../screens/spotify_embed_screen.dart';
 import 'verified_badge.dart';
 
+// ignore_for_file: unused_element_parameter
+
 /// sort_order لصور البروفايل (6 slots): 200–205 — يطابق edit_profile_screen.
 const int _profilePhotoSortBase = 200;
 
@@ -59,8 +61,10 @@ class VerticalProfileView extends StatelessWidget {
 
     /// شارة التوثيق (التحقق بالـ selfie) تظهر بجانب الاسم والعمر.
     this.isVerified = false,
+
     /// تلميح حقل رسالة الهدية (ماذا سوف تهمس له/لها...) — إن وُجد يُستخدم بدل النص الافتراضي.
     this.giftMessageHint,
+
     /// يُستدعى بعد إرسال هدية بنجاح (نص الرسالة للعرض في الورقة الطائرة).
     this.onGiftSentSuccess,
   });
@@ -106,8 +110,10 @@ class VerticalProfileView extends StatelessWidget {
 
   /// عرض شارة التوثيق بجانب الاسم والعمر.
   final bool isVerified;
+
   /// تلميح حقل رسالة الهدية (من إعدادات الضمير).
   final String? giftMessageHint;
+
   /// بعد إرسال هدية بنجاح — يُستدعى بنص النجاح لعرض الورقة الطائرة فوق الشاشة.
   final void Function(String successMessage)? onGiftSentSuccess;
 
@@ -1010,11 +1016,11 @@ class _HeroSliverBackground extends StatelessWidget {
             fit: BoxFit.cover,
             memCacheWidth: lightweightMode ? 400 : null,
             memCacheHeight: lightweightMode ? 500 : null,
-            placeholder: (_, __) => Container(
+            placeholder: (_, _) => Container(
               color: AppColors.hingePurple.withValues(alpha: 0.2),
               child: const Icon(Icons.person, size: 80, color: Colors.white54),
             ),
-            errorWidget: (_, __, ___) => Container(
+            errorWidget: (_, _, _) => Container(
               color: AppColors.hingePurple.withValues(alpha: 0.3),
               child: const Icon(Icons.person, size: 80, color: Colors.white54),
             ),
@@ -1313,7 +1319,7 @@ class _HeroPhotoSection extends StatelessWidget {
                     fit: BoxFit.cover,
                     memCacheWidth: lightweightMode ? 400 : null,
                     memCacheHeight: lightweightMode ? 500 : null,
-                    placeholder: (_, __) => Container(
+                    placeholder: (_, _) => Container(
                       color: AppColors.hingePurple.withValues(alpha: 0.2),
                       child: const Icon(
                         Icons.person,
@@ -1321,7 +1327,7 @@ class _HeroPhotoSection extends StatelessWidget {
                         color: Colors.white54,
                       ),
                     ),
-                    errorWidget: (_, __, ___) => Container(
+                    errorWidget: (_, _, _) => Container(
                       color: AppColors.hingePurple.withValues(alpha: 0.3),
                       child: const Icon(
                         Icons.person,
@@ -1986,7 +1992,7 @@ class _VoiceRecordingCardState extends State<_VoiceRecordingCard> {
                                 width: 56,
                                 height: 56,
                                 fit: BoxFit.cover,
-                                placeholder: (_, __) => Container(
+                                placeholder: (_, _) => Container(
                                   width: 56,
                                   height: 56,
                                   color: AppColors.darkBlack.withValues(
@@ -1998,7 +2004,7 @@ class _VoiceRecordingCardState extends State<_VoiceRecordingCard> {
                                     color: Colors.green.shade700,
                                   ),
                                 ),
-                                errorWidget: (_, __, ___) => Container(
+                                errorWidget: (_, _, _) => Container(
                                   width: 56,
                                   height: 56,
                                   color: AppColors.darkBlack.withValues(
@@ -2553,11 +2559,11 @@ class _PhotoCard extends StatelessWidget {
               child: CachedNetworkImage(
                 imageUrl: imageUrl,
                 fit: BoxFit.cover,
-                placeholder: (_, __) => Container(
+                placeholder: (_, _) => Container(
                   color: Colors.grey.shade200,
                   child: const Icon(Icons.image_outlined, size: 48),
                 ),
-                errorWidget: (_, __, ___) => Container(
+                errorWidget: (_, _, _) => Container(
                   color: Colors.grey.shade300,
                   child: const Icon(Icons.image_not_supported, size: 48),
                 ),
@@ -2626,20 +2632,54 @@ class _MessageIconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const size = 52.0;
     return Material(
-      color: Colors.white,
-      shape: const CircleBorder(),
-      elevation: 2,
-      shadowColor: Colors.black26,
+      color: Colors.transparent,
+      elevation: 6,
+      shadowColor: AppColors.hingePurple.withValues(alpha: 0.5),
+      borderRadius: BorderRadius.circular(14),
       child: InkWell(
         onTap: () => _openSendMessageSheet(context),
-        customBorder: const CircleBorder(),
-        child: const Padding(
-          padding: EdgeInsets.all(10),
-          child: Icon(
-            Icons.chat_bubble_outline,
-            color: AppColors.hingePurple,
-            size: 26,
+        borderRadius: BorderRadius.circular(14),
+        child: SizedBox(
+          width: size,
+          height: size,
+          child: Container(
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  AppColors.hingePurple.withValues(alpha: 0.9),
+                  AppColors.hingePurple.withValues(alpha: 0.75),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.45),
+                width: 1.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.hingePurple.withValues(alpha: 0.4),
+                  blurRadius: 14,
+                  offset: const Offset(0, 4),
+                ),
+                BoxShadow(
+                  color: AppColors.hingePurple.withValues(alpha: 0.2),
+                  blurRadius: 8,
+                  spreadRadius: 0,
+                ),
+              ],
+            ),
+            child: const Center(
+              child: Icon(
+                Icons.chat_bubble_outline_rounded,
+                color: Colors.white,
+                size: 26,
+              ),
+            ),
           ),
         ),
       ),
@@ -2704,52 +2744,56 @@ class _SendMessageSheetContentState extends State<_SendMessageSheetContent> {
 
     final l10n = AppLocalizations.of(context);
     final navigator = Navigator.of(context);
-    final giftsEnabled = widget.onSendGiftWithMessage != null;
 
-    if (giftsEnabled && _selectedGiftType == null) {
+    if (_selectedGiftType == null) {
       FlyingGiftMessageOverlay.show(context, l10n.selectGiftToSend);
       return;
     }
-    if (widget.onSendGiftWithMessage != null && _selectedGiftType != null) {
-      if (text.isEmpty) {
-        FlyingGiftMessageOverlay.show(context, l10n.writeMessageToSendWithGift);
-        return;
-      }
-      setState(() => _sending = true);
-      try {
-        await widget.onSendGiftWithMessage!(
-          widget.profileOwnerId,
-          text,
-          _selectedGiftType!,
+    if (text.isEmpty) {
+      FlyingGiftMessageOverlay.show(context, l10n.writeMessageToSendWithGift);
+      return;
+    }
+    if (widget.onSendGiftWithMessage == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.giftsAvailableWithRealProfiles),
+            backgroundColor: AppColors.hingePurple,
+            behavior: SnackBarBehavior.floating,
+          ),
         );
-        if (!mounted) return;
-        final successMessage = AppLocalizations.of(context).giftSentSuccess;
-        navigator.pop();
-        widget.onGiftSentSuccess?.call(successMessage);
-      } catch (_) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(AppLocalizations.of(context).errorOccurred),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-      } finally {
-        if (mounted) setState(() => _sending = false);
       }
-    } else {
-      if (text.isEmpty) return;
-      widget.onSendMessage(widget.profileOwnerId, text, widget.photoUrl);
+      return;
+    }
+    setState(() => _sending = true);
+    try {
+      await widget.onSendGiftWithMessage!(
+        widget.profileOwnerId,
+        text,
+        _selectedGiftType!,
+      );
+      if (!mounted) return;
+      final successMessage = AppLocalizations.of(context).giftSentSuccess;
       navigator.pop();
+      widget.onGiftSentSuccess?.call(successMessage);
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context).errorOccurred),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _sending = false);
     }
   }
 
   bool get _canSend {
     final hasText = _controller.text.trim().isNotEmpty;
-    final giftsEnabled = widget.onSendGiftWithMessage != null;
-    if (giftsEnabled) return hasText && _selectedGiftType != null;
-    return hasText;
+    // دائماً نطلب اختيار هدية ورسالة معاً — لا إرسال بدون هدية.
+    return hasText && _selectedGiftType != null;
   }
 
   String _selectedGiftLabel(AppLocalizations l10n) {
@@ -2775,17 +2819,17 @@ class _SendMessageSheetContentState extends State<_SendMessageSheetContent> {
       child: Container(
         padding: const EdgeInsets.fromLTRB(24, 24, 24, 28),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: const Color(0xFFFAFAFA),
           borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
           border: Border.all(
-            color: AppColors.hingePurple.withValues(alpha: 0.35),
+            color: const Color(0xFFE0E0E0),
             width: 1,
           ),
           boxShadow: [
             BoxShadow(
-              color: AppColors.darkBlack.withValues(alpha: 0.12),
-              blurRadius: 24,
-              offset: const Offset(0, -4),
+              color: AppColors.darkBlack.withValues(alpha: 0.08),
+              blurRadius: 20,
+              offset: const Offset(0, -2),
             ),
           ],
         ),
@@ -2798,12 +2842,19 @@ class _SendMessageSheetContentState extends State<_SendMessageSheetContent> {
                 child: Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: AppColors.hingePurple.withValues(alpha: 0.15),
                     shape: BoxShape.circle,
+                    color: const Color(0xFF37474F),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.darkBlack.withValues(alpha: 0.2),
+                        blurRadius: 12,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
-                  child: Icon(
-                    Icons.favorite_border,
-                    color: AppColors.hingePurple,
+                  child: const Icon(
+                    Icons.favorite_rounded,
+                    color: Colors.white,
                     size: 28,
                   ),
                 ),
@@ -2824,7 +2875,7 @@ class _SendMessageSheetContentState extends State<_SendMessageSheetContent> {
                 style: GoogleFonts.montserrat(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.darkBlack,
+                  color: const Color(0xFF546E7A),
                 ),
               ),
               const SizedBox(height: 14),
@@ -2842,15 +2893,14 @@ class _SendMessageSheetContentState extends State<_SendMessageSheetContent> {
                           '€${GiftPricing.formatCents(GiftPricing.rosePriceCents)}',
                       giftType: 'rose_gift',
                       selected: _selectedGiftType == 'rose_gift',
-                      enabled: giftsEnabled,
+                      enabled: true,
                       onTap: () {
-                        if (giftsEnabled) {
-                          setState(() {
-                            _selectedGiftType = _selectedGiftType == 'rose_gift'
-                                ? null
-                                : 'rose_gift';
-                          });
-                        } else {
+                        setState(() {
+                          _selectedGiftType = _selectedGiftType == 'rose_gift'
+                              ? null
+                              : 'rose_gift';
+                        });
+                        if (!giftsEnabled) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(
@@ -2876,15 +2926,14 @@ class _SendMessageSheetContentState extends State<_SendMessageSheetContent> {
                           '€${GiftPricing.formatCents(GiftPricing.ringPriceCents)}',
                       giftType: 'ring_gift',
                       selected: _selectedGiftType == 'ring_gift',
-                      enabled: giftsEnabled,
+                      enabled: true,
                       onTap: () {
-                        if (giftsEnabled) {
-                          setState(() {
-                            _selectedGiftType = _selectedGiftType == 'ring_gift'
-                                ? null
-                                : 'ring_gift';
-                          });
-                        } else {
+                        setState(() {
+                          _selectedGiftType = _selectedGiftType == 'ring_gift'
+                              ? null
+                              : 'ring_gift';
+                        });
+                        if (!giftsEnabled) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(
@@ -2910,16 +2959,15 @@ class _SendMessageSheetContentState extends State<_SendMessageSheetContent> {
                           '€${GiftPricing.formatCents(GiftPricing.coffeePriceCents)}',
                       giftType: 'coffee_gift',
                       selected: _selectedGiftType == 'coffee_gift',
-                      enabled: giftsEnabled,
+                      enabled: true,
                       onTap: () {
-                        if (giftsEnabled) {
-                          setState(() {
-                            _selectedGiftType =
-                                _selectedGiftType == 'coffee_gift'
-                                ? null
-                                : 'coffee_gift';
-                          });
-                        } else {
+                        setState(() {
+                          _selectedGiftType =
+                              _selectedGiftType == 'coffee_gift'
+                              ? null
+                              : 'coffee_gift';
+                        });
+                        if (!giftsEnabled) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(
@@ -2934,6 +2982,18 @@ class _SendMessageSheetContentState extends State<_SendMessageSheetContent> {
                   ),
                 ],
               ),
+              if (_selectedGiftType == null) ...[
+                const SizedBox(height: 8),
+                Text(
+                  l10n.selectGiftToSend,
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.montserrat(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF546E7A),
+                  ),
+                ),
+              ],
               if (_selectedGiftType != null) ...[
                 const SizedBox(height: 14),
                 Container(
@@ -2942,10 +3002,10 @@ class _SendMessageSheetContentState extends State<_SendMessageSheetContent> {
                     vertical: 12,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.hingePurple.withValues(alpha: 0.18),
+                    color: const Color(0xFFECEFF1),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: AppColors.hingePurple.withValues(alpha: 0.6),
+                      color: const Color(0xFF37474F),
                       width: 1.5,
                     ),
                   ),
@@ -2955,7 +3015,7 @@ class _SendMessageSheetContentState extends State<_SendMessageSheetContent> {
                     children: [
                       Icon(
                         Icons.check_circle_rounded,
-                        color: AppColors.hingePurple,
+                        color: const Color(0xFF37474F),
                         size: 24,
                       ),
                       const SizedBox(width: 10),
@@ -2966,7 +3026,7 @@ class _SendMessageSheetContentState extends State<_SendMessageSheetContent> {
                           style: GoogleFonts.montserrat(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.hingePurple,
+                            color: const Color(0xFF37474F),
                           ),
                         ),
                       ),
@@ -2979,6 +3039,8 @@ class _SendMessageSheetContentState extends State<_SendMessageSheetContent> {
                 controller: _controller,
                 enabled: !_sending,
                 maxLines: 3,
+                textInputAction: TextInputAction.newline,
+                onSubmitted: null,
                 decoration: InputDecoration(
                   hintText: widget.giftMessageHint ?? l10n.sendNiceMessageHint,
                   hintStyle: GoogleFonts.montserrat(
@@ -2996,7 +3058,7 @@ class _SendMessageSheetContentState extends State<_SendMessageSheetContent> {
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
                     borderSide: const BorderSide(
-                      color: AppColors.hingePurple,
+                      color: Color(0xFF37474F),
                       width: 1.5,
                     ),
                   ),
@@ -3013,35 +3075,60 @@ class _SendMessageSheetContentState extends State<_SendMessageSheetContent> {
                 ),
               ),
               const SizedBox(height: 20),
+              if (!_canSend && !_sending) ...[
+                Text(
+                  _selectedGiftType == null
+                      ? l10n.selectGiftToSend
+                      : l10n.writeMessageToSendWithGift,
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.montserrat(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF546E7A),
+                  ),
+                ),
+                const SizedBox(height: 10),
+              ],
               Material(
                 color: Colors.transparent,
                 child: InkWell(
-                  onTap: (_sending || !_canSend) ? null : _send,
+                  onTap: _sending
+                      ? null
+                      : _canSend
+                          ? _send
+                          : () {
+                              final hasText = _controller.text.trim().isNotEmpty;
+                              if (!hasText) {
+                                FlyingGiftMessageOverlay.show(
+                                    context, l10n.writeMessageToSendWithGift);
+                              } else {
+                                FlyingGiftMessageOverlay.show(
+                                    context, l10n.selectGiftToSend);
+                              }
+                            },
                   borderRadius: BorderRadius.circular(14),
                   child: Container(
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(14),
-                      gradient: _canSend && !_sending
-                          ? const LinearGradient(
-                              colors: [
-                                AppColors.hingePurple,
-                                Color(0xFF7B52A0),
-                              ],
+                      color: _canSend && !_sending
+                          ? const Color(0xFF37474F)
+                          : Colors.grey.shade400,
+                      border: !_canSend && !_sending
+                          ? Border.all(
+                              color: Colors.grey.shade500,
+                              width: 1.5,
                             )
                           : null,
-                      color: _canSend && !_sending
-                          ? null
-                          : Colors.grey.shade300,
                       boxShadow: _canSend && !_sending
                           ? [
                               BoxShadow(
-                                color: AppColors.hingePurple.withValues(
-                                  alpha: 0.4,
+                                color: AppColors.darkBlack.withValues(
+                                  alpha: 0.2,
                                 ),
-                                blurRadius: 10,
-                                offset: const Offset(0, 4),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
                               ),
                             ]
                           : null,
@@ -3054,7 +3141,7 @@ class _SendMessageSheetContentState extends State<_SendMessageSheetContent> {
                         fontSize: 16,
                         color: _canSend && !_sending
                             ? Colors.white
-                            : Colors.grey.shade600,
+                            : Colors.grey.shade700,
                       ),
                     ),
                   ),
@@ -3088,115 +3175,174 @@ class _GiftSelectOption extends StatelessWidget {
   final bool enabled;
   final VoidCallback onTap;
 
+  static const Color _formalPrimary = Color(0xFF37474F);
+  static const Color _formalBorder = Color(0xFFE0E0E0);
+  static const Color _formalSurface = Color(0xFFFAFAFA);
+
+  Color _cardBaseColor() {
+    if (!enabled) return Colors.grey.shade200;
+    return _formalSurface;
+  }
+
+  Color _accentColor() {
+    if (!enabled) return AppColors.darkBlack.withValues(alpha: 0.3);
+    return _formalPrimary;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final accent = _accentColor();
+    final cardColor = _cardBaseColor();
     final borderColor = enabled
-        ? (selected
-              ? AppColors.hingePurple
-              : AppColors.hingePurple.withValues(alpha: 0.5))
-        : AppColors.darkBlack.withValues(alpha: 0.3);
-    final bgColor = enabled
-        ? (selected
-              ? AppColors.hingePurple.withValues(alpha: 0.18)
-              : Colors.white)
-        : Colors.grey.shade100;
+        ? (selected ? accent : _formalBorder)
+        : AppColors.darkBlack.withValues(alpha: 0.25);
     final textColor = enabled
         ? AppColors.darkBlack
         : AppColors.darkBlack.withValues(alpha: 0.5);
     final priceColor = enabled
-        ? (selected
-              ? AppColors.hingePurple
-              : AppColors.darkBlack.withValues(alpha: 0.7))
+        ? (selected ? accent : AppColors.darkBlack.withValues(alpha: 0.75))
         : AppColors.darkBlack.withValues(alpha: 0.45);
-    final iconBgColor = enabled
-        ? (selected
-              ? AppColors.hingePurple.withValues(alpha: 0.28)
-              : AppColors.hingePurple.withValues(alpha: 0.12))
-        : AppColors.darkBlack.withValues(alpha: 0.08);
 
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(20),
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 12),
+          height: 152,
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: borderColor, width: selected ? 2.5 : 2),
-            color: bgColor,
+            borderRadius: BorderRadius.circular(20),
+            color: cardColor,
+            border: Border.all(
+              color: borderColor,
+              width: selected ? 3 : 1.5,
+            ),
             boxShadow: [
               BoxShadow(
-                color: AppColors.darkBlack.withValues(alpha: 0.1),
-                blurRadius: 12,
+                color: AppColors.darkBlack.withValues(alpha: 0.06),
+                blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
+              if (selected) ...[
+                BoxShadow(
+                  color: accent.withValues(alpha: 0.25),
+                  blurRadius: 12,
+                  spreadRadius: 0,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ],
           ),
           child: Stack(
             clipBehavior: Clip.none,
             children: [
+              if (selected)
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  top: 0,
+                  bottom: 0,
+                  child: Container(
+                    margin: const EdgeInsets.all(3),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(17),
+                      border: Border.all(
+                        color: accent,
+                        width: 2,
+                      ),
+                    ),
+                  ),
+                ),
               Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Container(
-                    width: 56,
-                    height: 56,
-                    decoration: BoxDecoration(
-                      color: iconBgColor,
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: selected
-                            ? AppColors.hingePurple.withValues(alpha: 0.4)
-                            : Colors.grey.shade300,
-                        width: 1.5,
+                  Expanded(
+                    child: Center(
+                      child: Opacity(
+                        opacity: enabled ? 1 : 0.5,
+                        child: Container(
+                          width: 64,
+                          height: 64,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white,
+                            border: Border.all(
+                              color: selected ? accent : _formalBorder,
+                              width: selected ? 2.5 : 1.5,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.darkBlack.withValues(
+                                  alpha: 0.06,
+                                ),
+                                blurRadius: 6,
+                                offset: const Offset(0, 1),
+                              ),
+                            ],
+                          ),
+                          child: Center(child: icon),
+                        ),
                       ),
                     ),
-                    alignment: Alignment.center,
-                    child: Opacity(opacity: enabled ? 1 : 0.5, child: icon),
                   ),
-                  const SizedBox(height: 10),
-                  Text(
-                    label,
-                    style: GoogleFonts.montserrat(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 14,
-                      color: textColor,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    price,
-                    style: GoogleFonts.montserrat(
-                      fontSize: 12,
-                      color: priceColor,
-                      fontWeight: FontWeight.w600,
+                  SizedBox(
+                    height: 44,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          label,
+                          style: GoogleFonts.montserrat(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 14,
+                            color: textColor,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          price,
+                          style: GoogleFonts.montserrat(
+                            fontSize: 13,
+                            color: priceColor,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
               if (selected)
                 Positioned(
-                  top: 4,
-                  right: 4,
+                  top: 2,
+                  right: 2,
                   child: Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: accent,
                       shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 2.5),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black26,
+                          color: accent.withValues(alpha: 0.6),
+                          blurRadius: 12,
+                          offset: const Offset(0, 2),
+                        ),
+                        BoxShadow(
+                          color: AppColors.darkBlack.withValues(alpha: 0.2),
                           blurRadius: 6,
-                          offset: Offset(0, 2),
+                          offset: const Offset(0, 1),
                         ),
                       ],
                     ),
-                    child: Icon(
-                      Icons.check_circle_rounded,
-                      color: AppColors.hingePurple,
-                      size: 24,
+                    child: const Icon(
+                      Icons.check_rounded,
+                      color: Colors.white,
+                      size: 28,
                     ),
                   ),
                 ),
@@ -3791,6 +3937,7 @@ class _CornerIconButtonState extends State<_CornerIconButton>
 }
 
 /// بطاقة زجاجية واحدة: زرّا «تواصل» و«تجاوز» عمودياً مع لمعان قزحي على الحواف.
+// ignore: unused_element
 class _GlassConnectPassCard extends StatelessWidget {
   const _GlassConnectPassCard({
     required this.connectLabel,
@@ -3911,6 +4058,7 @@ class _GlassCardButton extends StatelessWidget {
 enum _ActionStyle { skip, like }
 
 /// شريط سفلي: حقل رسالة + زر هدية + أزرار تخطي وإعجاب.
+// ignore: unused_element
 class _DiscoveryBottomBar extends StatelessWidget {
   const _DiscoveryBottomBar({
     required this.onPass,
@@ -4010,64 +4158,114 @@ class _GiftMessageBarState extends State<_GiftMessageBar> {
   void _openGiftPicker() {
     if (_sending) return;
     final l10n = AppLocalizations.of(context);
+    String? selectedGiftType;
     showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
       barrierColor: Colors.black54,
-      builder: (ctx) => Container(
-        padding: const EdgeInsets.all(24),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              l10n.sendGift,
-              style: GoogleFonts.montserrat(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: AppColors.darkBlack,
-              ),
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setSheetState) {
+          return Container(
+            padding: const EdgeInsets.all(24),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
             ),
-            const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                _GiftPickerOption(
-                  icon: CinematicRoseWidget(
-                    size: 40,
-                    color: null,
-                    withGlow: true,
+                Text(
+                  l10n.sendGift,
+                  style: GoogleFonts.montserrat(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.darkBlack,
                   ),
-                  label: l10n.giftRose,
-                  price:
-                      '€${GiftPricing.formatCents(GiftPricing.rosePriceCents)}',
-                  onTap: () => _sendGift('rose_gift', ctx),
                 ),
-                _GiftPickerOption(
-                  icon: Icon(
-                    Icons.diamond_rounded,
-                    size: 32,
-                    color: AppColors.ringGold,
+                if (selectedGiftType == null) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    l10n.selectGiftToSend,
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.montserrat(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.hingePurple,
+                    ),
                   ),
-                  label: l10n.giftRing,
-                  price:
-                      '€${GiftPricing.formatCents(GiftPricing.ringPriceCents)}',
-                  onTap: () => _sendGift('ring_gift', ctx),
+                ],
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _GiftPickerOption(
+                      icon: CinematicRoseWidget(
+                        size: 40,
+                        color: null,
+                        withGlow: true,
+                      ),
+                      label: l10n.giftRose,
+                      price:
+                          '€${GiftPricing.formatCents(GiftPricing.rosePriceCents)}',
+                      selected: selectedGiftType == 'rose_gift',
+                      onTap: () => setSheetState(
+                          () => selectedGiftType = selectedGiftType == 'rose_gift' ? null : 'rose_gift'),
+                    ),
+                    _GiftPickerOption(
+                      icon: Icon(
+                        Icons.diamond_rounded,
+                        size: 32,
+                        color: AppColors.ringGold,
+                      ),
+                      label: l10n.giftRing,
+                      price:
+                          '€${GiftPricing.formatCents(GiftPricing.ringPriceCents)}',
+                      selected: selectedGiftType == 'ring_gift',
+                      onTap: () => setSheetState(
+                          () => selectedGiftType = selectedGiftType == 'ring_gift' ? null : 'ring_gift'),
+                    ),
+                    _GiftPickerOption(
+                      icon: CoffeeIconWidget(size: 40, color: null, withGlow: true),
+                      label: l10n.giftCoffee,
+                      price:
+                          '€${GiftPricing.formatCents(GiftPricing.coffeePriceCents)}',
+                      selected: selectedGiftType == 'coffee_gift',
+                      onTap: () => setSheetState(
+                          () => selectedGiftType = selectedGiftType == 'coffee_gift' ? null : 'coffee_gift'),
+                    ),
+                  ],
                 ),
-                _GiftPickerOption(
-                  icon: CoffeeIconWidget(size: 40, color: null, withGlow: true),
-                  label: l10n.giftCoffee,
-                  price:
-                      '€${GiftPricing.formatCents(GiftPricing.coffeePriceCents)}',
-                  onTap: () => _sendGift('coffee_gift', ctx),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton(
+                    onPressed: selectedGiftType != null
+                        ? () {
+                            if (_controller.text.trim().isEmpty) {
+                              FlyingGiftMessageOverlay.show(
+                                context,
+                                l10n.writeMessageToSendWithGift,
+                              );
+                              return;
+                            }
+                            _sendGift(selectedGiftType!, ctx);
+                          }
+                        : null,
+                    style: FilledButton.styleFrom(
+                      backgroundColor: const Color(0xFF37474F),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                    child: Text(l10n.sendNiceMessageButton),
+                  ),
                 ),
               ],
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
@@ -4190,12 +4388,14 @@ class _GiftPickerOption extends StatelessWidget {
     required this.label,
     required this.price,
     required this.onTap,
+    this.selected = false,
   });
 
   final Widget icon;
   final String label;
   final String price;
   final VoidCallback onTap;
+  final bool selected;
 
   @override
   Widget build(BuildContext context) {
@@ -4208,10 +4408,20 @@ class _GiftPickerOption extends StatelessWidget {
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             border: Border.all(
-              color: AppColors.rosePink.withValues(alpha: 0.3),
+              color: selected ? const Color(0xFF37474F) : const Color(0xFFE0E0E0),
+              width: selected ? 3 : 1,
             ),
             borderRadius: BorderRadius.circular(16),
-            color: AppColors.rosePink.withValues(alpha: 0.05),
+            color: selected ? const Color(0xFFECEFF1) : const Color(0xFFFAFAFA),
+            boxShadow: selected
+                ? [
+                    BoxShadow(
+                      color: AppColors.darkBlack.withValues(alpha: 0.1),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : null,
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -4230,7 +4440,7 @@ class _GiftPickerOption extends StatelessWidget {
                 price,
                 style: GoogleFonts.montserrat(
                   fontSize: 11,
-                  color: AppColors.rosePink,
+                  color: const Color(0xFF37474F),
                   fontWeight: FontWeight.w500,
                 ),
               ),

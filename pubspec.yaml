@@ -56,6 +56,8 @@ dependencies:
   permission_handler: ^11.3.1
   purchases_flutter: ^9.13.2
   purchases_ui_flutter: ^9.13.2
+  flutter_3d_controller: ^2.3.0
+  model_viewer_plus: ^1.10.0
 
 dev_dependencies:
   flutter_test:
@@ -93,9 +95,11 @@ flutter:
     - assets/rachelscottyoga-woman-2937182_1920.png
     - assets/iqbalstock-couple-5422806_1920.png
     - assets/34.png
+    - assets/4.png
     - assets/rose.png
     - assets/coffee_icon.png
     - assets/ring_icon.png
+    - assets/434.png
     - assets/1000_F_329046482_SLaH6nGEdvbNGNuSlkUHKnkZdlqYoXu7.jpg
     - assets/videos/0309 (1).mp4
     - assets/videos/0309_1.mp4

@@ -529,6 +529,11 @@
   "swaplySubscription": "Swaply Subscription",
   "featureSendGifts": "Send gifts",
   "tapToViewConversation": "Tap to view conversation",
+  "chatFilterTitle": "Filter conversations",
+  "chatFilterNewest": "Newest",
+  "chatFilterOldest": "Oldest",
+  "chatFilterGiftsOnly": "Who sent gifts",
+  "chatFilterUnreadOnly": "Unread messages",
   "newMatchLabel": "New",
   "block": "Block",
   "sendReport": "Send",
@@ -548,6 +553,8 @@
   "complaintAddEvidence": "Add image",
   "complaintReasonRequired": "Please enter the reason",
   "complaintEvidenceRequired": "Please add an image as evidence",
+  "submitComplaint": "Submit a complaint",
+  "submitComplaintDescription": "Describe the issue and attach a screenshot. We will review it.",
   "profile": "Profile",
   "message": "Message",
   "profileLoadFailed": "Failed to load profile",
@@ -640,5 +647,13 @@
   "messageCopied": "Copied",
   "youCrushedWithSwaply": "You Crushed\nwith Swaply",
   "swaplyTeam": "The Swaply team",
-  "swaplyWelcomeMessage": "Welcome to Swaply. Your safety and satisfaction are our priority. We work every day for a secure and enjoyable experience. Start the conversation and find your match."
+  "swaplyWelcomeMessage": "Welcome to Swaply. Your safety and satisfaction are our priority. We work every day for a secure and enjoyable experience. Start the conversation and find your match.",
+  "swaplyWelcomeMessageWithName": "Welcome, {userName}, to the Swaply community!\n\nWe are thrilled to have you. We are here to ensure you have a fun and completely safe experience, with your privacy and satisfaction at the heart of everything we do in the app.\n\nOur team works hard behind the scenes to provide an interactive environment that matches your aspirations and helps you build real, successful connections. Feel free to explore the features and start your first conversation—the perfect Match is waiting for you!\n\nBest regards,\nThe Swaply team",
+  "@swaplyWelcomeMessageWithName": {
+    "placeholders": {
+      "userName": {
+        "type": "String"
+      }
+    }
+  }
 }

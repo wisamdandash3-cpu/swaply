@@ -18,6 +18,7 @@ import '../app_colors.dart';
 import '../generated/l10n/app_localizations.dart';
 import '../models/chat_message.dart';
 import '../services/block_service.dart';
+import '../services/broadcast_unread_service.dart';
 import '../services/complaint_service.dart';
 import '../services/chat_read_service.dart';
 import '../services/message_service.dart';
@@ -44,11 +45,20 @@ import 'profile_view_screen.dart';
 const String kSwaplyPartnerId = 'swaply_system';
 const String kSwaplyLogoAsset = 'assets/344.png';
 
+/// نوع فلتر قائمة المحادثات (الترتيب أو التصفية).
+enum ChatFilterType {
+  newest,
+  oldest,
+  giftsOnly,
+  unreadOnly,
+}
+
 /// شاشة الدردشة: قائمة محادثات ثم محادثة مع عرض بروفايل المرسل (اسم + صورة).
 class ChatScreen extends StatefulWidget {
   const ChatScreen({
     super.key,
     this.isVisible = true,
+    this.filterType = ChatFilterType.newest,
     this.onGoToDiscovery,
     this.onGoToLikedYou,
     this.onGoToSubscription,
@@ -57,6 +67,9 @@ class ChatScreen extends StatefulWidget {
 
   /// يُحمّل المحادثات فقط عند عرض التبويب (تجنب التجميد).
   final bool isVisible;
+
+  /// فلتر/ترتيب قائمة المحادثات (الأحدث، الأقدم، من أرسل هدايا، غير مقروءة).
+  final ChatFilterType filterType;
 
   /// عند عدم وجود محادثات: الانتقال للرئيسية (الاكتشاف).
   final VoidCallback? onGoToDiscovery;
@@ -160,6 +173,7 @@ class _ChatScreenState extends State<ChatScreen> {
     }
 
     if (ids.isEmpty) {
+      final broadcastUnread = await getBroadcastUnreadCount();
       if (mounted) {
         setState(() {
           _partners = [
@@ -168,7 +182,7 @@ class _ChatScreenState extends State<ChatScreen> {
               name: 'Swaply',
               avatarUrl: null,
               isVerified: true,
-              unreadCount: 0,
+              unreadCount: broadcastUnread,
               isOnline: false,
               giftType: null,
             ),
@@ -184,13 +198,18 @@ class _ChatScreenState extends State<ChatScreen> {
       Future.wait(ids.map((id) => _profileDisplay.getDisplayInfo(id))),
       Future.wait(ids.map((id) => _userSettings.isOnline(id))),
       Future.wait(ids.map((id) => _messageService.getConversationGiftType(userId, id))),
+      getBroadcastUnreadCount(),
+      getLastBroadcastMessageAt(),
     ]);
     final infos =
         results[0]
             as List<({String displayName, String? avatarUrl, bool isVerified})>;
     final onlines = results[1] as List<bool>;
     final giftTypes = results[2] as List<String?>;
-    final partners =
+    final broadcastUnread = results[3] as int;
+    final lastBroadcastAt = results[4] as DateTime?;
+
+    final userPartners =
         <
           ({
             String id,
@@ -203,7 +222,7 @@ class _ChatScreenState extends State<ChatScreen> {
           })
         >[];
     for (var i = 0; i < ids.length; i++) {
-      partners.add((
+      userPartners.add((
         id: ids[i],
         name: infos[i].displayName,
         avatarUrl: infos[i].avatarUrl,
@@ -213,18 +232,50 @@ class _ChatScreenState extends State<ChatScreen> {
         giftType: giftTypes[i],
       ));
     }
-    partners.insert(
-      0,
-      (
-        id: kSwaplyPartnerId,
-        name: 'Swaply',
-        avatarUrl: null,
-        isVerified: true,
-        unreadCount: 0,
-        isOnline: false,
-        giftType: null,
-      ),
+
+    final swaplyEntry = (
+      id: kSwaplyPartnerId,
+      name: 'Swaply',
+      avatarUrl: null,
+      isVerified: true,
+      unreadCount: broadcastUnread,
+      isOnline: false,
+      giftType: null,
     );
+
+    final List<
+        ({
+          String id,
+          String name,
+          String? avatarUrl,
+          bool isVerified,
+          int unreadCount,
+          bool isOnline,
+          String? giftType,
+        })> partners;
+
+    if (serverList.isNotEmpty) {
+      final lastAtByPartner = {for (final e in serverList) e.partnerId: e.lastMessageAt};
+      final withTime = <({String id, DateTime? at})>[
+        for (final id in ids) (id: id, at: lastAtByPartner[id]),
+        (id: kSwaplyPartnerId, at: lastBroadcastAt),
+      ];
+      withTime.sort((a, b) {
+        final atA = a.at;
+        final atB = b.at;
+        if (atA == null && atB == null) return 0;
+        if (atA == null) return 1;
+        if (atB == null) return -1;
+        return atB.compareTo(atA);
+      });
+      final idToPartner = {for (final p in userPartners) p.id: p};
+      partners = [
+        for (final e in withTime)
+          e.id == kSwaplyPartnerId ? swaplyEntry : idToPartner[e.id]!,
+      ];
+    } else {
+      partners = [...userPartners, swaplyEntry];
+    }
     if (mounted) {
       setState(() {
         _partners = partners;
@@ -305,32 +356,13 @@ class _ChatScreenState extends State<ChatScreen> {
     } catch (_) {}
   }
 
-  static IconData _giftIconData(String giftType) {
-    switch (giftType) {
-      case 'rose_gift':
-        return Icons.local_florist_rounded;
-      case 'ring_gift':
-        return Icons.diamond_rounded;
-      case 'coffee_gift':
-        return Icons.coffee_rounded;
-      default:
-        return Icons.card_giftcard_rounded;
-    }
-  }
+  /// إيموجي الهدية 🎁 في قائمة المحادثات.
+  static Widget _giftEmojiWidget({double size = 18}) =>
+      Text('🎁', style: TextStyle(fontSize: size, height: 1.2));
 
-  static Color _giftTintColor(String? giftType) {
-    if (giftType == null) return Colors.transparent;
-    switch (giftType) {
-      case 'rose_gift':
-        return AppColors.rosePink;
-      case 'ring_gift':
-        return Colors.amber;
-      case 'coffee_gift':
-        return Colors.brown;
-      default:
-        return AppColors.rosePink;
-    }
-  }
+  /// لون محايد لعناصر الهدية في القائمة (بدون وردي/ذهبي/بني).
+  static Color _giftListNeutralColor() =>
+      AppColors.darkBlack.withValues(alpha: 0.55);
 
   void _openConversation(
     String partnerId,
@@ -376,6 +408,31 @@ class _ChatScreenState extends State<ChatScreen> {
         onGoToLikedYou: widget.onGoToLikedYou,
         onGoToSubscription: widget.onGoToSubscription,
       );
+    }
+
+    List<
+        ({
+          String id,
+          String name,
+          String? avatarUrl,
+          bool isVerified,
+          int unreadCount,
+          bool isOnline,
+          String? giftType,
+        })> displayedPartners;
+    switch (widget.filterType) {
+      case ChatFilterType.newest:
+        displayedPartners = List.from(_partners);
+        break;
+      case ChatFilterType.oldest:
+        displayedPartners = _partners.reversed.toList();
+        break;
+      case ChatFilterType.giftsOnly:
+        displayedPartners = _partners.where((p) => p.giftType != null).toList();
+        break;
+      case ChatFilterType.unreadOnly:
+        displayedPartners = _partners.where((p) => p.unreadCount > 0).toList();
+        break;
     }
 
     final userId = Supabase.instance.client.auth.currentUser?.id ?? '';
@@ -512,39 +569,48 @@ class _ChatScreenState extends State<ChatScreen> {
         Expanded(
           child: ListView.builder(
             padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-            itemCount: _partners.length,
+            itemCount: displayedPartners.length,
             itemBuilder: (context, i) {
-              final p = _partners[i];
+              final p = displayedPartners[i];
               final isSwaply = p.id == kSwaplyPartnerId;
               final content = Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
               color: isSwaply
                   ? AppColors.warmSand.withValues(alpha: 0.12)
-                  : _giftTintColor(p.giftType).withValues(alpha: 0.08),
+                  : (p.giftType != null
+                      ? AppColors.warmSand.withValues(alpha: 0.14)
+                      : Colors.transparent),
             ),
             child: ListTile(
-              leading: Stack(
-                clipBehavior: Clip.none,
-                children: [
+              minLeadingWidth: 56,
+              leading: SizedBox(
+                width: 56,
+                height: 56,
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
                   if (isSwaply)
                     ClipOval(
-                      child: Image.asset(
-                        kSwaplyLogoAsset,
-                        width: 56,
-                        height: 56,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Container(
+                      child: Transform.scale(
+                        scale: 1.68,
+                        child: Image.asset(
+                          kSwaplyLogoAsset,
                           width: 56,
                           height: 56,
-                          color: AppColors.darkBlack,
-                          alignment: Alignment.center,
-                          child: Text(
-                            'S',
-                            style: GoogleFonts.montserrat(
-                              fontSize: 28,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.white,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => Container(
+                            width: 56,
+                            height: 56,
+                            color: AppColors.darkBlack,
+                            alignment: Alignment.center,
+                            child: Text(
+                              'S',
+                              style: GoogleFonts.montserrat(
+                                fontSize: 28,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                              ),
                             ),
                           ),
                         ),
@@ -556,18 +622,9 @@ class _ChatScreenState extends State<ChatScreen> {
                         ? BoxDecoration(
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: _giftTintColor(p.giftType),
-                              width: 2.5,
+                              color: _giftListNeutralColor(),
+                              width: 2,
                             ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: _giftTintColor(
-                                  p.giftType,
-                                ).withValues(alpha: 0.35),
-                                blurRadius: 8,
-                                spreadRadius: 0,
-                              ),
-                            ],
                           )
                         : null,
                     child: CircleAvatar(
@@ -606,15 +663,12 @@ class _ChatScreenState extends State<ChatScreen> {
                       ),
                     ),
                 ],
+                ),
               ),
               title: Row(
                 children: [
                   if (p.giftType != null) ...[
-                    Icon(
-                      _giftIconData(p.giftType!),
-                      size: 18,
-                      color: _giftTintColor(p.giftType),
-                    ),
+                    _giftEmojiWidget(size: 18),
                     const SizedBox(width: 6),
                   ],
                   Expanded(
@@ -642,15 +696,31 @@ class _ChatScreenState extends State<ChatScreen> {
                         vertical: 2,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.neonCoral,
                         borderRadius: BorderRadius.circular(10),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.35),
+                            blurRadius: 2,
+                            offset: const Offset(0, 1),
+                          ),
+                        ],
+                        gradient: const LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            Color(0xFF3D3D3D),
+                            Color(0xFF252525),
+                            Color(0xFF1A1A1A),
+                          ],
+                          stops: [0.0, 0.5, 1.0],
+                        ),
                       ),
                       child: Text(
                         p.unreadCount > 99 ? '99+' : '${p.unreadCount}',
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 12,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ),
@@ -666,12 +736,18 @@ class _ChatScreenState extends State<ChatScreen> {
                       style: GoogleFonts.montserrat(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
-                        color: _giftTintColor(p.giftType),
+                        color: _giftListNeutralColor(),
                       ),
                     ),
                     const SizedBox(height: 2),
                   ],
-                  Text(AppLocalizations.of(context).tapToViewConversation),
+                  Text(
+                    p.unreadCount > 0
+                        ? (p.unreadCount == 1
+                            ? 'رسالة جديدة'
+                            : '${p.unreadCount} رسائل جديدة')
+                        : AppLocalizations.of(context).tapToViewConversation,
+                  ),
                 ],
               ),
               onTap: () => _openConversation(
@@ -901,6 +977,8 @@ class _ConversationScreenState extends State<ConversationScreen> {
   Timer? _recordingTimer;
   Timer? _amplitudeTimer;
   String? _recordingPath;
+  List<Map<String, dynamic>> _broadcastMessages = [];
+  String? _currentUserDisplayName;
 
   @override
   void initState() {
@@ -910,11 +988,54 @@ class _ConversationScreenState extends State<ConversationScreen> {
     _loadCurrentUserAvatar();
     _subscribeToNewMessages();
     _controller.addListener(_onTypingChanged);
+    if (widget.partnerId == kSwaplyPartnerId) _loadBroadcastMessages();
+  }
+
+  Future<void> _loadBroadcastMessages() async {
+    try {
+      final list = await Supabase.instance.client
+          .from('broadcast_messages')
+          .select('id, content, image_url, video_url, created_at')
+          .order('created_at', ascending: false);
+      if (!mounted) return;
+      final prefs = await SharedPreferences.getInstance();
+      final lastSeen = prefs.getString('broadcast_last_seen_at');
+      DateTime? lastSeenDt;
+      if (lastSeen != null) lastSeenDt = DateTime.tryParse(lastSeen);
+      bool hasNew = false;
+      if (list.isNotEmpty && lastSeenDt != null) {
+        final latest = list.first;
+        final created = latest['created_at'] as String?;
+        if (created != null) {
+          final createdDt = DateTime.tryParse(created);
+          if (createdDt != null && createdDt.isAfter(lastSeenDt)) hasNew = true;
+        }
+      } else if (list.isNotEmpty) hasNew = true;
+      setState(() => _broadcastMessages = List<Map<String, dynamic>>.from(list));
+      if (hasNew && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('رسالة جديدة من فريق سوابلي'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+      final latestCreated = list.isNotEmpty ? list.first['created_at'] as String? : null;
+      if (latestCreated != null) await prefs.setString('broadcast_last_seen_at', latestCreated);
+    } catch (e, st) {
+      debugPrint('BroadcastMessage load error: $e');
+      debugPrint(st.toString());
+    }
   }
 
   Future<void> _loadCurrentUserAvatar() async {
     final info = await _profileDisplay.getDisplayInfo(widget.currentUserId);
-    if (mounted) setState(() => _currentUserAvatarUrl = info.avatarUrl);
+    if (mounted) {
+      setState(() {
+        _currentUserAvatarUrl = info.avatarUrl;
+        _currentUserDisplayName = info.displayName;
+      });
+    }
   }
 
   /// اسم القناة المشتركة بين الطرفين (مرتب ليتفق الطرفان على نفس الاسم).
@@ -1823,6 +1944,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
     showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
+      isScrollControlled: true,
       builder: (modalContext) => _GiftSheetContent(
         walletService: _walletService,
         likeService: _likeService,
@@ -1878,6 +2000,14 @@ class _ConversationScreenState extends State<ConversationScreen> {
 
   static const Color _swaplyCreamBg = Color(0xFFF5F0E8);
 
+  /// نص الترحيب المخصص (مع اسم المستخدم) أو الرسالة الافتراضية إن لم يُحمّل الاسم بعد.
+  String _buildSwaplyWelcomeText(AppLocalizations l10n) {
+    final name = _currentUserDisplayName?.trim() ?? '';
+    return name.isNotEmpty
+        ? l10n.swaplyWelcomeMessageWithName(name)
+        : l10n.swaplyWelcomeMessage;
+  }
+
   /// واجهة محادثة Swaply: شعار 344.png دائري + صورة المستخدم، ورسالة ترحيب.
   Widget _buildSwaplyConversationScaffold(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -1913,12 +2043,15 @@ class _ConversationScreenState extends State<ConversationScreen> {
         ),
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          child: Column(
-            children: [
-              Text(
-                dateOnly,
+        child: RefreshIndicator(
+          onRefresh: _loadBroadcastMessages,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            child: Column(
+              children: [
+                Text(
+                  dateOnly,
                 style: GoogleFonts.montserrat(
                   fontSize: 14,
                   color: Colors.grey.shade700,
@@ -1926,40 +2059,12 @@ class _ConversationScreenState extends State<ConversationScreen> {
                 ),
               ),
               const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  _SwaplyCrushAvatar(
-                    assetPath: kSwaplyLogoAsset,
-                    size: 88,
-                  ),
-                  const SizedBox(width: 12),
-                  Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: AppColors.rosePink.withValues(alpha: 0.9),
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.12),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: const Icon(
-                      Icons.favorite_rounded,
-                      color: Colors.white,
-                      size: 24,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  _SwaplyCrushAvatar(
-                    imageUrl: _currentUserAvatarUrl,
-                    size: 88,
-                  ),
-                ],
+              _CrushAvatarsStack(
+                logoAssetPath: kSwaplyLogoAsset,
+                profileImageUrl: _currentUserAvatarUrl,
+                avatarSize: 72,
+                overlap: -14,
+                heartSize: 36,
               ),
               const SizedBox(height: 16),
               Text(
@@ -1983,47 +2088,149 @@ class _ConversationScreenState extends State<ConversationScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.06),
-                      blurRadius: 16,
-                      offset: const Offset(0, 4),
+              // رسالة الترحيب تظهر دائماً أولاً (خاصة للحسابات الجديدة)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.black.withValues(alpha: 0.08), width: 1),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.06),
+                            blurRadius: 16,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Text(
+                        _buildSwaplyWelcomeText(l10n),
+                        style: GoogleFonts.montserrat(
+                          fontSize: 15,
+                          color: AppColors.darkBlack.withValues(alpha: 0.85),
+                          height: 1.55,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _SwaplyLogoCircle(size: 20, assetPath: kSwaplyLogoAsset),
+                        const SizedBox(width: 8),
+                        Text(
+                          l10n.swaplyTeam,
+                          style: GoogleFonts.montserrat(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.darkBlack.withValues(alpha: 0.8),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-                child: Text(
-                  l10n.swaplyWelcomeMessage,
-                  style: GoogleFonts.montserrat(
-                    fontSize: 15,
-                    color: AppColors.darkBlack.withValues(alpha: 0.85),
-                    height: 1.55,
-                  ),
-                ),
               ),
-              const SizedBox(height: 12),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _SwaplyLogoCircle(size: 20, assetPath: kSwaplyLogoAsset),
-                  const SizedBox(width: 8),
-                  Text(
-                    l10n.swaplyTeam,
-                    style: GoogleFonts.montserrat(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.darkBlack.withValues(alpha: 0.8),
+              // ثم الرسائل الجماعية المرسلة من لوحة التحكم
+              ...List.generate(_broadcastMessages.length, (i) {
+                  final m = _broadcastMessages[i];
+                  final content = (m['content'] as String?)?.trim() ?? '';
+                  final imageUrl = m['image_url'] as String?;
+                  final videoUrl = m['video_url'] as String?;
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: Colors.black.withValues(alpha: 0.08), width: 1),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.06),
+                                blurRadius: 16,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (content.isNotEmpty)
+                                Text(
+                                  content,
+                                  style: GoogleFonts.montserrat(
+                                    fontSize: 15,
+                                    color: AppColors.darkBlack.withValues(alpha: 0.85),
+                                    height: 1.55,
+                                  ),
+                                ),
+                              if (imageUrl != null && imageUrl.isNotEmpty) ...[
+                                if (content.isNotEmpty) const SizedBox(height: 12),
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Image.network(
+                                    imageUrl,
+                                    width: double.infinity,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                                  ),
+                                ),
+                              ],
+                              if (videoUrl != null && videoUrl.isNotEmpty) ...[
+                                if (content.isNotEmpty || (imageUrl != null && imageUrl.isNotEmpty)) const SizedBox(height: 12),
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                                    color: Colors.grey.shade200,
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(Icons.play_circle_fill, color: AppColors.darkBlack),
+                                        const SizedBox(width: 8),
+                                        Text('فيديو', style: GoogleFonts.montserrat(fontSize: 14)),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            _SwaplyLogoCircle(size: 20, assetPath: kSwaplyLogoAsset),
+                            const SizedBox(width: 8),
+                            Text(
+                              l10n.swaplyTeam,
+                              style: GoogleFonts.montserrat(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.darkBlack.withValues(alpha: 0.8),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
-                  ),
-                ],
-              ),
+                  );
+                }),
               const SizedBox(height: 32),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -2211,7 +2418,9 @@ class _ConversationScreenState extends State<ConversationScreen> {
                             onTapPartner: _openPartnerProfile,
                             onTapMessage: _showMessageActions,
                             onRoseGiftTap:
-                                (!isMe && message.photoUrl == 'rose_gift')
+                                (!isMe &&
+                                    (message.photoUrl == 'rose_gift' ||
+                                        message.photoUrl == 'ring_gift'))
                                 ? _showGiftSheet
                                 : null,
                             reactionEmoji: _reactions[message.id],
@@ -2343,22 +2552,25 @@ class _SwaplyLogoCircle extends StatelessWidget {
         ],
       ),
       child: ClipOval(
-        child: Image.asset(
-          assetPath,
-          fit: BoxFit.cover,
-          width: size,
-          height: size,
-          errorBuilder: (_, __, ___) => Container(
+        child: Transform.scale(
+          scale: 1.68,
+          child: Image.asset(
+            assetPath,
+            fit: BoxFit.cover,
             width: size,
             height: size,
-            color: AppColors.darkBlack,
-            alignment: Alignment.center,
-            child: Text(
-              'S',
-              style: GoogleFonts.montserrat(
-                fontSize: size * 0.5,
-                fontWeight: FontWeight.w700,
-                color: Colors.white,
+            errorBuilder: (_, __, ___) => Container(
+              width: size,
+              height: size,
+              color: AppColors.darkBlack,
+              alignment: Alignment.center,
+              child: Text(
+                'S',
+                style: GoogleFonts.montserrat(
+                  fontSize: size * 0.5,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
               ),
             ),
           ),
@@ -2368,13 +2580,95 @@ class _SwaplyLogoCircle extends StatelessWidget {
   }
 }
 
-/// إطار دائري بالكامل: شعار Swaply (344.png) أو صورة المستخدم — كامل الدائرة كالصورة الثالثة.
-class _SwaplyCrushAvatar extends StatelessWidget {
-  const _SwaplyCrushAvatar({this.assetPath, this.imageUrl, required this.size});
+/// صف الأيقونات الثلاث بتصميم الصورة الثالثة: لوغو وبروفايل بنفس الحجم مع تداخل وإطار أبيض، وقلب أسود وأبيض فوق التداخل.
+class _CrushAvatarsStack extends StatelessWidget {
+  const _CrushAvatarsStack({
+    required this.logoAssetPath,
+    required this.profileImageUrl,
+    required this.avatarSize,
+    required this.overlap,
+    required this.heartSize,
+  });
 
+  final String logoAssetPath;
+  final String? profileImageUrl;
+  final double avatarSize;
+  final double overlap;
+  final double heartSize;
+
+  @override
+  Widget build(BuildContext context) {
+    final stackWidth = avatarSize * 2 - overlap;
+    final heartLeft = (stackWidth - heartSize) / 2;
+    final heartTop = (avatarSize - heartSize) / 2 + 10;
+
+    return SizedBox(
+      width: stackWidth,
+      height: avatarSize,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Positioned(
+            left: 0,
+            top: 0,
+            child: _CrushAvatarFrame(
+              size: avatarSize,
+              assetPath: logoAssetPath,
+              imageUrl: null,
+            ),
+          ),
+          Positioned(
+            left: avatarSize - overlap,
+            top: 0,
+            child: _CrushAvatarFrame(
+              size: avatarSize,
+              assetPath: null,
+              imageUrl: profileImageUrl,
+            ),
+          ),
+          Positioned(
+            left: heartLeft,
+            top: heartTop,
+            child: Container(
+              width: heartSize,
+              height: heartSize,
+              decoration: BoxDecoration(
+                color: Colors.black,
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 2),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.15),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              alignment: Alignment.center,
+              child: Icon(
+                Icons.favorite_rounded,
+                color: Colors.white,
+                size: heartSize * 0.62,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// إطار دائري بحد أبيض رفيع (تصميم الصورة الثالثة) للوغو أو صورة البروفايل.
+class _CrushAvatarFrame extends StatelessWidget {
+  const _CrushAvatarFrame({
+    required this.size,
+    this.assetPath,
+    this.imageUrl,
+  });
+
+  final double size;
   final String? assetPath;
   final String? imageUrl;
-  final double size;
 
   @override
   Widget build(BuildContext context) {
@@ -2383,6 +2677,7 @@ class _SwaplyCrushAvatar extends StatelessWidget {
       height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
+        border: Border.all(color: Colors.white, width: 2.5),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.1),
@@ -2393,12 +2688,14 @@ class _SwaplyCrushAvatar extends StatelessWidget {
       ),
       child: ClipOval(
         child: assetPath != null
-            ? Image.asset(
-                assetPath!,
-                fit: BoxFit.cover,
-                width: size,
-                height: size,
-                errorBuilder: (_, __, ___) => Container(
+            ? Transform.scale(
+                scale: 1.68,
+                child: Image.asset(
+                  assetPath!,
+                  fit: BoxFit.cover,
+                  width: size,
+                  height: size,
+                  errorBuilder: (_, __, ___) => Container(
                   width: size,
                   height: size,
                   color: AppColors.darkBlack,
@@ -2412,7 +2709,8 @@ class _SwaplyCrushAvatar extends StatelessWidget {
                     ),
                   ),
                 ),
-              )
+              ),
+            )
             : (imageUrl != null && imageUrl!.isNotEmpty)
                 ? Image.network(
                     imageUrl!,
@@ -2635,60 +2933,17 @@ class _MessageBubble extends StatelessWidget {
         lower.contains('.wav');
   }
 
-  static IconData _giftIconForMessage(String? photoUrl) {
-    if (photoUrl == 'rose_gift') return Icons.local_florist_rounded;
-    if (photoUrl == 'ring_gift') return Icons.diamond_rounded;
-    if (photoUrl == 'coffee_gift') return Icons.coffee_rounded;
-    return Icons.card_giftcard_rounded;
-  }
+  /// إيموجي الهدية 🎁 في فقاعات الرسائل.
+  static Widget _giftEmojiWidget(double size) =>
+      Text('🎁', style: TextStyle(fontSize: size, height: 1.2));
 
   static Color _giftColorForMessage(String? photoUrl) {
-    if (photoUrl == 'rose_gift') return AppColors.rosePink;
-    if (photoUrl == 'ring_gift') return Colors.amber;
-    if (photoUrl == 'coffee_gift') return Colors.brown;
-    return AppColors.rosePink;
+    return AppColors.darkBlack.withValues(alpha: 0.6);
   }
 
-  /// شكل الهدية في فقاعة المرسل (وردة / خاتم / قهوة) بدل أيقونة الهدية العامة.
-  static Widget _senderGiftIcon(String? photoUrl) {
-    const size = 28.0;
-    switch (photoUrl) {
-      case 'rose_gift':
-        return SizedBox(
-          width: size,
-          height: size,
-          child: Center(
-            child: CinematicRoseWidget(
-              size: size,
-              color: null,
-              withGlow: false,
-            ),
-          ),
-        );
-      case 'ring_gift':
-        return SizedBox(
-          width: size,
-          height: size,
-          child: Center(
-            child: RingIconWidget(size: size, color: null, withGlow: false),
-          ),
-        );
-      case 'coffee_gift':
-        return SizedBox(
-          width: size,
-          height: size,
-          child: Center(
-            child: CoffeeIconWidget(size: size, color: null, withGlow: false),
-          ),
-        );
-      default:
-        return Icon(
-          Icons.card_giftcard_rounded,
-          size: 22,
-          color: AppColors.rosePink,
-        );
-    }
-  }
+  /// أيقونة الهدية في فقاعة المرسل.
+  static Widget _senderGiftIcon(String? photoUrl) =>
+      _giftEmojiWidget(26);
 
   Widget _avatar(String name, String? imageUrl) {
     return CircleAvatar(
@@ -2760,17 +3015,14 @@ class _MessageBubble extends StatelessWidget {
                   message.photoUrl,
                 )
               : _avatar(partnerName, partnerAvatarUrl));
-    final hideAvatarForRoseGift = !isMe && message.photoUrl == 'rose_gift';
+    final hideAvatarForGift = !isMe &&
+        (message.photoUrl == 'rose_gift' || message.photoUrl == 'ring_gift');
     final avatarWidget = _wrapIfPartner(isMe, avatar);
     final nameWidget = isGiftFromPartner
         ? Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                _giftIconForMessage(message.photoUrl),
-                size: 14,
-                color: _giftColorForMessage(message.photoUrl),
-              ),
+              _giftEmojiWidget(14),
               const SizedBox(width: 6),
               Text(
                 senderName,
@@ -2824,10 +3076,10 @@ class _MessageBubble extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    if (!hideAvatarForRoseGift &&
+                    if (!hideAvatarForGift &&
                         ((isRTL && isMe) || (!isRTL && !isMe)))
                       avatarWidget,
-                    if (!hideAvatarForRoseGift &&
+                    if (!hideAvatarForGift &&
                         ((isRTL && isMe) || (!isRTL && !isMe)))
                       const SizedBox(width: 8),
                     Flexible(
@@ -2849,7 +3101,8 @@ class _MessageBubble extends StatelessWidget {
                               ),
                               child: Container(
                                 padding:
-                                    (!isMe && message.photoUrl == 'rose_gift')
+                                    (message.photoUrl == 'rose_gift' ||
+                                            message.photoUrl == 'ring_gift')
                                     ? EdgeInsets.zero
                                     : const EdgeInsets.symmetric(
                                         horizontal: 16,
@@ -2857,7 +3110,8 @@ class _MessageBubble extends StatelessWidget {
                                       ),
                                 decoration: BoxDecoration(
                                   color:
-                                      (!isMe && message.photoUrl == 'rose_gift')
+                                      (message.photoUrl == 'rose_gift' ||
+                                              message.photoUrl == 'ring_gift')
                                       ? Colors.transparent
                                       : _isGiftMessage(message)
                                       ? (isMe
@@ -2873,7 +3127,8 @@ class _MessageBubble extends StatelessWidget {
                                               )
                                             : const Color(0xFFE5F5F5)),
                                   border:
-                                      (!isMe && message.photoUrl == 'rose_gift')
+                                      (message.photoUrl == 'rose_gift' ||
+                                              message.photoUrl == 'ring_gift')
                                       ? null
                                       : _isGiftMessage(message)
                                       ? Border.all(
@@ -2896,13 +3151,18 @@ class _MessageBubble extends StatelessWidget {
                                     bottomRight: Radius.circular(isMe ? 4 : 20),
                                   ),
                                   boxShadow:
-                                      (!isMe && message.photoUrl == 'rose_gift')
+                                      (!isMe &&
+                                              (message.photoUrl == 'rose_gift' ||
+                                                  message.photoUrl ==
+                                                      'ring_gift'))
                                       ? null
                                       : [
                                           if (_isGiftMessage(message) &&
                                               (isMe ||
                                                   message.photoUrl !=
-                                                      'rose_gift'))
+                                                      'rose_gift' &&
+                                                      message.photoUrl !=
+                                                          'ring_gift'))
                                             BoxShadow(
                                               color: AppColors.rosePink
                                                   .withValues(alpha: 0.25),
@@ -3018,17 +3278,7 @@ class _MessageBubble extends StatelessWidget {
                                                           const SizedBox(
                                                             width: 6,
                                                           ),
-                                                          Icon(
-                                                            _MessageBubble._giftIconForMessage(
-                                                              message
-                                                                  .replyToPhotoUrl,
-                                                            ),
-                                                            size: 18,
-                                                            color: _MessageBubble._giftColorForMessage(
-                                                              message
-                                                                  .replyToPhotoUrl,
-                                                            ),
-                                                          ),
+                                                          _MessageBubble._giftEmojiWidget(18),
                                                         ],
                                                       ],
                                                     ),
@@ -3118,17 +3368,7 @@ class _MessageBubble extends StatelessWidget {
                                                           const SizedBox(
                                                             width: 6,
                                                           ),
-                                                          Icon(
-                                                            _MessageBubble._giftIconForMessage(
-                                                              message
-                                                                  .replyToPhotoUrl,
-                                                            ),
-                                                            size: 18,
-                                                            color: _MessageBubble._giftColorForMessage(
-                                                              message
-                                                                  .replyToPhotoUrl,
-                                                            ),
-                                                          ),
+                                                          _MessageBubble._giftEmojiWidget(18),
                                                         ],
                                                       ],
                                                     ),
@@ -3223,6 +3463,25 @@ class _MessageBubble extends StatelessWidget {
                                                 ),
                                               ),
                                             )
+                                          : message.photoUrl == 'ring_gift'
+                                          ? GestureDetector(
+                                              onTap: onRoseGiftTap,
+                                              child: FallingPetalsInBox(
+                                                borderRadius:
+                                                    BorderRadius.circular(24),
+                                                child: SizedBox(
+                                                  width: 520,
+                                                  height: 520,
+                                                  child: Center(
+                                                    child: RingIconWidget(
+                                                      size: 400,
+                                                      color: null,
+                                                      withGlow: false,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            )
                                           : message.photoUrl == 'coffee_gift'
                                           ? FallingPetalsInBox(
                                               borderRadius:
@@ -3239,25 +3498,56 @@ class _MessageBubble extends StatelessWidget {
                                                 ),
                                               ),
                                             )
-                                          : FallingPetalsInBox(
-                                              borderRadius:
-                                                  BorderRadius.circular(16),
-                                              child: SizedBox(
-                                                width: 200,
-                                                height: 200,
-                                                child: Center(
-                                                  child: RingIconWidget(
-                                                    size: 140,
-                                                    color: null,
-                                                    withGlow: true,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
+                                          : const SizedBox.shrink(),
                                       if (message.content.trim().isNotEmpty)
                                         const SizedBox(height: 6),
                                     ],
-                                    if (_isGiftMessage(message) && isMe)
+                                    if (_isGiftMessage(message) && isMe) ...[
+                                      // عرض شكل الهدية (وردة / خاتم / قهوة) في فقاعة المرسل
+                                      if (message.photoUrl == 'rose_gift')
+                                        Padding(
+                                          padding: const EdgeInsets.only(bottom: 8),
+                                          child: SizedBox(
+                                            width: 140,
+                                            height: 140,
+                                            child: Center(
+                                              child: Draggable3DRoseWidget(
+                                                size: 120,
+                                                withGlow: true,
+                                              ),
+                                            ),
+                                          ),
+                                        )
+                                      else if (message.photoUrl == 'ring_gift')
+                                        Padding(
+                                          padding: const EdgeInsets.only(bottom: 8),
+                                          child: SizedBox(
+                                            width: 100,
+                                            height: 100,
+                                            child: Center(
+                                              child: RingIconWidget(
+                                                size: 80,
+                                                color: null,
+                                                withGlow: true,
+                                              ),
+                                            ),
+                                          ),
+                                        )
+                                      else if (message.photoUrl == 'coffee_gift')
+                                        Padding(
+                                          padding: const EdgeInsets.only(bottom: 8),
+                                          child: SizedBox(
+                                            width: 100,
+                                            height: 100,
+                                            child: Center(
+                                              child: CoffeeIconWidget(
+                                                size: 80,
+                                                color: null,
+                                                withGlow: true,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
                                       Row(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
@@ -3286,8 +3576,9 @@ class _MessageBubble extends StatelessWidget {
                                             ).withValues(alpha: 0.8),
                                           ),
                                         ],
-                                      )
-                                    else if (!_isGiftMessage(message) &&
+                                      ),
+                                    ],
+                                    if (!_isGiftMessage(message) &&
                                         !_MessageBubble._isVoiceMessage(
                                           message,
                                         ))
@@ -3368,10 +3659,10 @@ class _MessageBubble extends StatelessWidget {
                         ),
                       ),
                     ),
-                    if (!hideAvatarForRoseGift &&
+                    if (!hideAvatarForGift &&
                         ((isRTL && !isMe) || (!isRTL && isMe)))
                       const SizedBox(width: 8),
-                    if (!hideAvatarForRoseGift &&
+                    if (!hideAvatarForGift &&
                         ((isRTL && !isMe) || (!isRTL && isMe)))
                       avatarWidget,
                   ],
@@ -3706,26 +3997,19 @@ class _ChatInputBarState extends State<_ChatInputBar> {
       );
     }
 
-    const accentColor = AppColors.inputBarAccent;
-    const barBg = Color(0xFF1A1A1A);
+    const barBg = Colors.white;
+    final iconColor = AppColors.darkBlack.withValues(alpha: 0.75);
 
     return Container(
       padding: EdgeInsets.fromLTRB(
-        12,
-        10,
-        12,
-        10 + MediaQuery.of(context).padding.bottom,
+        8,
+        6,
+        8,
+        6 + MediaQuery.of(context).padding.bottom,
       ),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: barBg,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
-            blurRadius: 12,
-            offset: const Offset(0, -4),
-          ),
-        ],
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
@@ -3734,57 +4018,61 @@ class _ChatInputBarState extends State<_ChatInputBar> {
             color: Colors.transparent,
             child: InkWell(
               onTap: widget.onGiftTap,
-              borderRadius: BorderRadius.circular(28),
+              borderRadius: BorderRadius.circular(24),
               child: Container(
-                width: 52,
-                height: 52,
-                decoration: BoxDecoration(
+                width: 40,
+                height: 40,
+                decoration: const BoxDecoration(
                   shape: BoxShape.circle,
                   color: barBg,
-                  border: Border.all(color: accentColor, width: 1.5),
                 ),
-                child: Icon(
-                  Icons.card_giftcard_rounded,
-                  color: accentColor,
-                  size: 26,
+                child: Text(
+                  '🎁',
+                  style: TextStyle(fontSize: 22, height: 1.2),
                 ),
               ),
             ),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 6),
           Expanded(
             child: Container(
               decoration: BoxDecoration(
-                color: Colors.black,
-                borderRadius: BorderRadius.circular(28),
-                border: Border.all(color: accentColor, width: 1.5),
+                color: AppColors.darkBlack.withValues(alpha: 0.06),
+                borderRadius: BorderRadius.circular(18),
               ),
               child: TextField(
                 controller: widget.controller,
                 maxLines: null,
                 minLines: 1,
                 maxLength: 10000,
-                style: TextStyle(color: Colors.grey.shade200, fontSize: 16),
+                style: TextStyle(
+                  color: AppColors.darkBlack.withValues(alpha: 0.85),
+                  fontSize: 14,
+                ),
                 decoration: InputDecoration(
                   hintText: AppLocalizations.of(context).messagePlaceholder,
-                  hintStyle: TextStyle(color: Colors.grey.shade500),
+                  hintStyle: TextStyle(
+                    color: AppColors.darkBlack.withValues(alpha: 0.4),
+                    fontSize: 14,
+                  ),
                   border: InputBorder.none,
+                  counterText: '',
                   contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 18,
-                    vertical: 14,
+                    horizontal: 12,
+                    vertical: 6,
                   ),
                   suffixIcon: widget.onVoiceTap != null
                       ? Padding(
-                          padding: const EdgeInsets.only(right: 8),
+                          padding: const EdgeInsets.only(right: 2),
                           child: IconButton(
                             onPressed: widget.onVoiceTap,
                             icon: Icon(
                               Icons.mic_rounded,
-                              color: accentColor,
-                              size: 24,
+                              color: iconColor,
+                              size: 20,
                             ),
                             style: IconButton.styleFrom(
-                              minimumSize: const Size(40, 40),
+                              minimumSize: const Size(32, 32),
                               padding: EdgeInsets.zero,
                             ),
                           ),
@@ -3800,20 +4088,19 @@ class _ChatInputBarState extends State<_ChatInputBar> {
             ),
           ),
           if (hasText) ...[
-            const SizedBox(width: 8),
+            const SizedBox(width: 4),
             Material(
               color: Colors.transparent,
               child: InkWell(
                 onTap: widget.onSend,
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.circular(18),
                 child: Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
                     color: barBg,
-                    borderRadius: BorderRadius.circular(24),
-                    border: Border.all(color: accentColor, width: 1.5),
+                    borderRadius: BorderRadius.circular(18),
                   ),
-                  child: Icon(Icons.send_rounded, color: accentColor, size: 24),
+                  child: Icon(Icons.send_rounded, color: iconColor, size: 20),
                 ),
               ),
             ),
@@ -4044,22 +4331,29 @@ class _GiftSheetContentState extends State<_GiftSheetContent> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          CinematicRoseWidget(size: 56, color: null, withGlow: false),
-          const SizedBox(height: 12),
+    final screenHeight = MediaQuery.sizeOf(context).height;
+    final bottomPadding = MediaQuery.paddingOf(context).bottom;
+    final maxHeight = (screenHeight * 0.78).clamp(380.0, screenHeight - 56.0);
+    return SizedBox(
+      height: maxHeight,
+      child: Container(
+        padding: EdgeInsets.fromLTRB(20, 16, 20, 16 + bottomPadding),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CinematicRoseWidget(size: 48, color: null, withGlow: false),
+          const SizedBox(height: 8),
           Text(
             l10n.sendGift,
             style: Theme.of(
               context,
-            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, fontSize: 15),
             textAlign: TextAlign.center,
           ),
           if (_loading)
@@ -4070,7 +4364,7 @@ class _GiftSheetContentState extends State<_GiftSheetContent> {
           else ...[
             if (_balance != null)
               Padding(
-                padding: const EdgeInsets.only(top: 12),
+                padding: const EdgeInsets.only(top: 8),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -4081,7 +4375,7 @@ class _GiftSheetContentState extends State<_GiftSheetContent> {
                     ),
                     const SizedBox(width: 10),
                     _BalanceChip(
-                      imagePath: 'assets/ring_icon.png',
+                      imagePath: 'assets/434.png',
                       color: const Color(0xFFC9A227),
                       count: _balance!.rings,
                     ),
@@ -4094,7 +4388,7 @@ class _GiftSheetContentState extends State<_GiftSheetContent> {
                   ],
                 ),
               ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 12),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -4116,7 +4410,7 @@ class _GiftSheetContentState extends State<_GiftSheetContent> {
                       : null,
                 ),
                 _GiftOption(
-                  imagePath: 'assets/ring_icon.png',
+                  imagePath: 'assets/434.png',
                   label: l10n.giftRing,
                   price:
                       '€${GiftPricing.formatCents(GiftPricing.ringPriceCents)}',
@@ -4151,32 +4445,35 @@ class _GiftSheetContentState extends State<_GiftSheetContent> {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 10),
             TextField(
               controller: _messageController,
-              maxLines: 3,
+              maxLines: 2,
+              minLines: 1,
               maxLength: 10000,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 14),
               decoration: InputDecoration(
                 hintText: _giftHint ?? l10n.matchGiftHint,
-                hintStyle: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+                hintStyle: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+                counterText: '',
                 filled: true,
                 fillColor: Colors.grey.shade100,
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(color: AppColors.hingePurple.withValues(alpha: 0.2)),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(color: AppColors.hingePurple.withValues(alpha: 0.25)),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(12),
                   borderSide: const BorderSide(color: AppColors.hingePurple, width: 1.5),
                 ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 10),
             SizedBox(
               width: double.infinity,
               child: FilledButton(
@@ -4188,18 +4485,18 @@ class _GiftSheetContentState extends State<_GiftSheetContent> {
                       ? AppColors.hingePurple
                       : Colors.grey.shade400,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
                 ),
                 child: Text(
                   l10n.matchConfirmAndSend,
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 10),
             TextButton.icon(
               onPressed: () => widget.onBuyGifts(null),
               icon: const Icon(Icons.add_shopping_cart, size: 20),
@@ -4210,6 +4507,8 @@ class _GiftSheetContentState extends State<_GiftSheetContent> {
             ),
           ],
         ],
+      ),
+        ),
       ),
     );
   }
@@ -4350,10 +4649,9 @@ class _GiftOption extends StatelessWidget {
                     width: 44,
                     height: 44,
                     fit: BoxFit.contain,
-                    errorBuilder: (_, __, ___) => Icon(
-                      Icons.card_giftcard_rounded,
-                      size: 44,
-                      color: accentColor,
+                    errorBuilder: (_, __, ___) => Text(
+                      '🎁',
+                      style: TextStyle(fontSize: 44, height: 1.2),
                     ),
                   ),
                 const SizedBox(height: 8),

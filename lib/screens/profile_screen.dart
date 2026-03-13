@@ -3,12 +3,14 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../app_colors.dart';
 import '../generated/l10n/app_localizations.dart';
+import '../services/complaint_service.dart';
 import '../services/profile_answer_service.dart';
 import '../services/profile_fields_service.dart';
 import '../services/user_settings_service.dart';
 import '../utils/profile_completion.dart';
 import '../widgets/verified_badge.dart';
 import 'edit_profile_screen.dart';
+import 'legal_screen.dart';
 import 'verification_flow_screen.dart';
 
 /// شاشة البروفايل بتصميم مشابه لـ Hinge: قسم عنوان (صورة دائرية، نسبة إنجاز، اسم، غير مكتمل)، تبويبات، ومحتوى.
@@ -25,9 +27,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   int? _profileCompletionPercent;
   String? _profilePhotoUrl; // أول صورة من profile_answers (نوع image)
   bool _isVerified = false;
+  int _helpCentreBadgeCount = 0;
   final ProfileFieldsService _profileFields = ProfileFieldsService();
   final ProfileAnswerService _answerService = ProfileAnswerService();
   final UserSettingsService _userSettings = UserSettingsService();
+  final ComplaintService _complaintService = ComplaintService();
   bool _loadedWhenVisible = false;
 
   @override
@@ -80,11 +84,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ? firstPhoto.first.content.trim()
           : null;
       final verified = await _userSettings.getSelfieVerificationStatus(userId);
+      final replyCount = await _complaintService.getAdminRepliesCount(userId);
       if (!mounted) return;
       setState(() {
         _profileCompletionPercent = percent;
         _profilePhotoUrl = photoUrl;
         _isVerified = verified == 'verified';
+        _helpCentreBadgeCount = replyCount;
       });
     } catch (_) {
       if (mounted) {
@@ -132,12 +138,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             icon: Icons.help_outline,
             title: l10n.helpCentre,
             description: l10n.helpCentreDesc,
-          ),
-          const SizedBox(height: 16),
-          _ProfileCard(
-            icon: Icons.lightbulb_outline,
-            title: l10n.whatWorks,
-            description: l10n.whatWorksDesc,
+            onTap: () => _openHelpCentre(context),
+            badgeCount: _helpCentreBadgeCount,
           ),
         ],
       ),
@@ -174,6 +176,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
           if (mounted) setState(() {});
         });
   }
+
+  void _openHelpCentre(BuildContext context) {
+    final locale = Localizations.localeOf(context).languageCode;
+    Navigator.of(context)
+        .push(
+          MaterialPageRoute<void>(
+            builder: (context) => LegalScreen(
+              type: LegalType.safeDatingTips,
+              languageCode: locale,
+            ),
+          ),
+        )
+        .then((_) async {
+          await _loadCompletion();
+          if (mounted) setState(() {});
+        });
+  }
+
 }
 
 /// علامة توثيق مع أيقونة قلم بداخلها (دائرة سلمونية + قلم أبيض كما في التصميم المرجعي).
@@ -573,15 +593,19 @@ class _ProfileCard extends StatelessWidget {
     required this.icon,
     required this.title,
     required this.description,
+    this.onTap,
+    this.badgeCount = 0,
   });
 
   final IconData icon;
   final String title;
   final String description;
+  final VoidCallback? onTap;
+  final int badgeCount;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    final content = Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -616,6 +640,12 @@ class _ProfileCard extends StatelessWidget {
                   color: AppColors.darkBlack.withValues(alpha: 0.4),
                 ),
               ),
+              if (badgeCount > 0)
+                Positioned(
+                  top: -4,
+                  right: -4,
+                  child: _ShinyPulsingBadge(count: badgeCount),
+                ),
             ],
           ),
           const SizedBox(width: 16),
@@ -645,6 +675,101 @@ class _ProfileCard extends StatelessWidget {
           ),
         ],
       ),
+    );
+    if (onTap != null) {
+      return Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: content,
+        ),
+      );
+    }
+    return content;
+  }
+}
+
+/// شارة إشعار لامعة ونابضة (دائرة سوداء + رقم أبيض مع نبض وتوهج).
+class _ShinyPulsingBadge extends StatefulWidget {
+  const _ShinyPulsingBadge({required this.count});
+
+  final int count;
+
+  @override
+  State<_ShinyPulsingBadge> createState() => _ShinyPulsingBadgeState();
+}
+
+class _ShinyPulsingBadgeState extends State<_ShinyPulsingBadge>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _glowAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 1200),
+      vsync: this,
+    )..repeat(reverse: true);
+
+    _scaleAnimation = Tween<double>(begin: 0.92, end: 1.18).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+    _glowAnimation = Tween<double>(begin: 0.4, end: 1.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final countStr = widget.count > 99 ? '99+' : widget.count.toString();
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        return Transform.scale(
+          scale: _scaleAnimation.value,
+          child: Container(
+            constraints: const BoxConstraints(
+              minWidth: 22,
+              minHeight: 22,
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1A1A1A),
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.white.withValues(alpha: 0.35 * _glowAnimation.value),
+                  blurRadius: 6,
+                  spreadRadius: 0.5,
+                ),
+                BoxShadow(
+                  color: const Color(0xFF1A1A1A).withValues(alpha: 0.5),
+                  blurRadius: 4,
+                  offset: const Offset(0, 1),
+                ),
+              ],
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              countStr,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

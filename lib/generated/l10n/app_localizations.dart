@@ -3058,6 +3058,36 @@ abstract class AppLocalizations {
   /// **'Tap to view conversation'**
   String get tapToViewConversation;
 
+  /// No description provided for @chatFilterTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter conversations'**
+  String get chatFilterTitle;
+
+  /// No description provided for @chatFilterNewest.
+  ///
+  /// In en, this message translates to:
+  /// **'Newest'**
+  String get chatFilterNewest;
+
+  /// No description provided for @chatFilterOldest.
+  ///
+  /// In en, this message translates to:
+  /// **'Oldest'**
+  String get chatFilterOldest;
+
+  /// No description provided for @chatFilterGiftsOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Who sent gifts'**
+  String get chatFilterGiftsOnly;
+
+  /// No description provided for @chatFilterUnreadOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Unread messages'**
+  String get chatFilterUnreadOnly;
+
   /// No description provided for @newMatchLabel.
   ///
   /// In en, this message translates to:
@@ -3159,6 +3189,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Please add an image as evidence'**
   String get complaintEvidenceRequired;
+
+  /// No description provided for @submitComplaint.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit a complaint'**
+  String get submitComplaint;
+
+  /// No description provided for @submitComplaintDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Describe the issue and attach a screenshot. We will review it.'**
+  String get submitComplaintDescription;
 
   /// No description provided for @profile.
   ///
@@ -3669,6 +3711,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Welcome to Swaply. Your safety and satisfaction are our priority. We work every day for a secure and enjoyable experience. Start the conversation and find your match.'**
   String get swaplyWelcomeMessage;
+
+  /// No description provided for @swaplyWelcomeMessageWithName.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome, {userName}, to the Swaply community!\n\nWe are thrilled to have you. We are here to ensure you have a fun and completely safe experience, with your privacy and satisfaction at the heart of everything we do in the app.\n\nOur team works hard behind the scenes to provide an interactive environment that matches your aspirations and helps you build real, successful connections. Feel free to explore the features and start your first conversation—the perfect Match is waiting for you!\n\nBest regards,\nThe Swaply team'**
+  String swaplyWelcomeMessageWithName(String userName);
 }
 
 class _AppLocalizationsDelegate

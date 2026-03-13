@@ -1515,6 +1515,21 @@ class AppLocalizationsBn extends AppLocalizations {
   String get tapToViewConversation => 'Tap to view conversation';
 
   @override
+  String get chatFilterTitle => 'Filter conversations';
+
+  @override
+  String get chatFilterNewest => 'Newest';
+
+  @override
+  String get chatFilterOldest => 'Oldest';
+
+  @override
+  String get chatFilterGiftsOnly => 'Who sent gifts';
+
+  @override
+  String get chatFilterUnreadOnly => 'Unread messages';
+
+  @override
   String get newMatchLabel => 'New';
 
   @override
@@ -1569,6 +1584,13 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get complaintEvidenceRequired => 'Please add an image as evidence';
+
+  @override
+  String get submitComplaint => 'Submit a complaint';
+
+  @override
+  String get submitComplaintDescription =>
+      'Describe the issue and attach a screenshot. We will review it.';
 
   @override
   String get profile => 'Profile';
@@ -1844,4 +1866,9 @@ class AppLocalizationsBn extends AppLocalizations {
   @override
   String get swaplyWelcomeMessage =>
       'Welcome to Swaply. Your safety and satisfaction are our priority. We work every day for a secure and enjoyable experience. Start the conversation and find your match.';
+
+  @override
+  String swaplyWelcomeMessageWithName(String userName) {
+    return 'Welcome, $userName, to the Swaply community!\n\nWe are thrilled to have you. We are here to ensure you have a fun and completely safe experience, with your privacy and satisfaction at the heart of everything we do in the app.\n\nOur team works hard behind the scenes to provide an interactive environment that matches your aspirations and helps you build real, successful connections. Feel free to explore the features and start your first conversation—the perfect Match is waiting for you!\n\nBest regards,\nThe Swaply team';
+  }
 }

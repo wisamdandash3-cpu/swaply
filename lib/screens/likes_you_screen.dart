@@ -13,8 +13,6 @@ import '../services/profile_display_service.dart';
 import '../services/profile_like_service.dart';
 import '../services/subscription_service.dart';
 import '../services/user_settings_service.dart';
-import '../widgets/verified_badge.dart';
-
 /// شاشة "معجب بك" — عرض من أعجب ببروفايلك (شبكة بطاقات بدون زر قلب). المطابقة من الرئيسية أو مميزون.
 class LikesYouScreen extends StatefulWidget {
   const LikesYouScreen({
@@ -249,14 +247,12 @@ class _LikesYouScreenState extends State<LikesYouScreen> {
         itemBuilder: (context, index) {
           final String avatarUrl;
           final String displayName;
-          final bool isVerified;
           final String age;
           final bool isOnline;
           if (showDemoLikes) {
             final p = _demoLikesPlaceholders[index];
             avatarUrl = p.avatarUrl;
             displayName = p.name;
-            isVerified = index % 3 == 0;
             age = p.age;
             isOnline = index % 2 == 0;
           } else {
@@ -264,12 +260,11 @@ class _LikesYouScreenState extends State<LikesYouScreen> {
             final info = _displayInfo[g.userId];
             avatarUrl = info?.avatarUrl ?? '';
             displayName = info?.displayName ?? '';
-            isVerified = info?.isVerified ?? false;
             age = _ages[g.userId] ?? '';
             isOnline = _isOnline[g.userId] ?? false;
           }
           final isSubscribed = SubscriptionService.instance.isSubscribed;
-          final showUnblurred = isSubscribed || showDemoLikes;
+          final showUnblurred = isSubscribed;
           final avatarWidget = avatarUrl.isNotEmpty
               ? Image.network(
                   avatarUrl,
@@ -294,10 +289,6 @@ class _LikesYouScreenState extends State<LikesYouScreen> {
                     ),
                   ),
                 ),
-              if (isVerified) ...[
-                const SizedBox(width: 4),
-                const VerifiedBadge(size: 14, color: Colors.white),
-              ],
               if (age.isNotEmpty) ...[
                 if (displayName.isNotEmpty) const SizedBox(width: 6),
                 Text(
@@ -324,7 +315,7 @@ class _LikesYouScreenState extends State<LikesYouScreen> {
                 showUnblurred
                     ? avatarWidget
                     : ImageFiltered(
-                        imageFilter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                        imageFilter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
                         child: avatarWidget,
                       ),
                 Positioned(

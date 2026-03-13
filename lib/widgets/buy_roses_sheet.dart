@@ -231,7 +231,7 @@ class _BuyGiftsSheetContentState extends State<_BuyGiftsSheetContent> {
                 color: AppColors.ringGold,
                 selected: _selectedTab == _GiftTab.rings,
                 onTap: () => setState(() => _selectedTab = _GiftTab.rings),
-                iconWidget: _RealGiftIcon(asset: 'assets/ring_icon.png', size: 20, fallback: RingIconWidget(size: 20, color: null, withGlow: false)),
+                iconWidget: _RealGiftIcon(asset: 'assets/434.png', size: 20, fallback: RingIconWidget(size: 20, color: null, withGlow: false)),
               ),
               const SizedBox(width: 8),
               _TabChip(
@@ -472,7 +472,7 @@ class _RingsContent extends StatelessWidget {
                     perUnit: perUnit,
                     isBestValue: isBest,
                     icon: _RealGiftIcon(
-                      asset: 'assets/ring_icon.png',
+                      asset: 'assets/434.png',
                       size: 32,
                       fallback: RingIconWidget(size: 32, color: null, withGlow: false),
                     ),

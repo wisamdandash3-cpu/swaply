@@ -15,7 +15,8 @@ class RingIconWidget extends StatelessWidget {
   final Color? color;
   final bool withGlow;
 
-  static const _ringAsset = 'assets/ring_icon.png';
+  /// صورة خاتم من دون خلفية — 4.png.
+  static const _ringAsset = 'assets/4.png';
 
   @override
   Widget build(BuildContext context) {

@@ -556,7 +556,7 @@ class _PulsingGiftIconState extends State<_PulsingGiftIcon>
                   ],
                 ),
                 child: widget.giftType == kGiftTypeRing
-                    ? Center(child: _RingShape(color: widget.color))
+                    ? Center(child: _RingImage(size: 32))
                     : Icon(widget.icon, size: 32, color: Colors.white),
               ),
             ),
@@ -838,7 +838,7 @@ class _FlyingGiftIcon extends StatelessWidget {
                     ? Center(
                         child: Transform.scale(
                           scale: 2.2,
-                          child: _RingShape(color: color),
+                          child: _RingImage(size: 24),
                         ),
                       )
                     : Icon(icon, size: 44, color: Colors.white),
@@ -1073,7 +1073,7 @@ class _SendFeelingSection extends StatelessWidget {
                 value: kGiftTypeRing,
                 selected: selectedGift == kGiftTypeRing,
                 onTap: () => onSelectGift(selectedGift == kGiftTypeRing ? null : kGiftTypeRing),
-                imagePath: 'assets/ring_icon.png',
+                imagePath: 'assets/434.png',
               ),
               const SizedBox(width: 8),
               _GiftChip(
@@ -1091,22 +1091,24 @@ class _SendFeelingSection extends StatelessWidget {
           TextField(
             controller: controller,
             maxLines: 2,
-            style: const TextStyle(color: Colors.white, fontSize: 15),
+            minLines: 1,
+            maxLength: 10000,
+            style: const TextStyle(color: Colors.white, fontSize: 14),
             decoration: InputDecoration(
               hintText: giftHint ?? l10n.matchGiftHint,
-              hintStyle: GoogleFonts.playfairDisplay(
-                fontSize: 16,
+              hintStyle: TextStyle(
+                fontSize: 14,
                 fontWeight: FontWeight.w500,
-                fontStyle: FontStyle.italic,
                 color: Colors.white.withValues(alpha: 0.9),
               ),
+              counterText: '',
               filled: true,
               fillColor: Colors.white.withValues(alpha: 0.08),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide.none,
               ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             ),
           ),
           const SizedBox(height: 10),
@@ -1178,75 +1180,23 @@ class _SendFeelingSection extends StatelessWidget {
   }
 }
 
-/// شكل خاتم كالمصورة: طوق فضيّ سميك + حجر أزرق واضح في الأعلى بمظهر متألق — داخل البادج الكريستالي.
-class _RingShape extends StatelessWidget {
-  const _RingShape({required this.color});
+/// أيقونة خاتم من صورة (نفس أسلوب الوردة).
+const String _kRingAsset = 'assets/434.png';
 
-  final Color color;
+class _RingImage extends StatelessWidget {
+  const _RingImage({this.size = 24});
+
+  final double size;
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 24,
-      height: 24,
-      child: Stack(
-        alignment: Alignment.center,
-        clipBehavior: Clip.none,
-        children: [
-          Container(
-            width: 18,
-            height: 18,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.transparent,
-              border: Border.all(
-                color: const Color(0xFFE8E8E8),
-                width: 2.8,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.white.withValues(alpha: 0.5),
-                  blurRadius: 1,
-                  offset: const Offset(-0.5, -0.5),
-                ),
-              ],
-            ),
-          ),
-          Positioned(
-            top: -1,
-            child: Container(
-              width: 8,
-              height: 8,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  center: const Alignment(-0.3, -0.3),
-                  radius: 0.9,
-                  colors: [
-                    Colors.white,
-                    const Color(0xFFB0E0E6),
-                    const Color(0xFF87CEEB),
-                    const Color(0xFF5BA3B8),
-                  ],
-                  stops: const [0.0, 0.3, 0.7, 1.0],
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.white.withValues(alpha: 0.8),
-                    blurRadius: 2,
-                    spreadRadius: 0,
-                    offset: const Offset(-0.5, -0.5),
-                  ),
-                  BoxShadow(
-                    color: const Color(0xFF87CEEB).withValues(alpha: 0.5),
-                    blurRadius: 3,
-                    spreadRadius: 0,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
+      width: size,
+      height: size,
+      child: Image.asset(
+        _kRingAsset,
+        fit: BoxFit.contain,
+        errorBuilder: (_, __, ___) => Icon(Icons.diamond_rounded, size: size, color: AppColors.ringGold),
       ),
     );
   }
@@ -1433,7 +1383,7 @@ class _GiftChipState extends State<_GiftChip> with SingleTickerProviderStateMixi
         errorBuilder: (_, __, ___) => Icon(giftInfo.icon, size: 20, color: Colors.white),
       );
     } else if (widget.value == kGiftTypeRing) {
-      customChild = _RingShape(color: giftInfo.color);
+      customChild = _RingImage(size: 28);
     }
     return AnimatedBuilder(
       animation: _pulseScale,

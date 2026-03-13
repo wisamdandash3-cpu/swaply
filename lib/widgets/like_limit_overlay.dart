@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -8,7 +7,7 @@ import '../app_colors.dart';
 import '../generated/l10n/app_localizations.dart';
 import '../screens/subscription_screen.dart';
 
-/// طبقة حد الإعجابات: عرض رسالة وعداد تنازلي 12 ساعة وزر اشتراك.
+/// طبقة حد الإعجابات: عرض رسالة وعداد تنازلي وزر اشتراك — تصميم متناسق مع بقية التطبيق.
 class LikeLimitOverlay extends StatefulWidget {
   const LikeLimitOverlay({
     super.key,
@@ -46,6 +45,7 @@ class LikeLimitOverlay extends StatefulWidget {
 class _LikeLimitOverlayState extends State<LikeLimitOverlay> {
   late Timer _timer;
   late Duration _remaining;
+  static const Color _cardBg = Color(0xFFF8F6F2);
 
   @override
   void initState() {
@@ -84,7 +84,6 @@ class _LikeLimitOverlayState extends State<LikeLimitOverlay> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final isRTL = Directionality.of(context) == TextDirection.rtl;
 
     return Material(
       color: Colors.transparent,
@@ -94,194 +93,136 @@ class _LikeLimitOverlayState extends State<LikeLimitOverlay> {
           child: Container(
             constraints: const BoxConstraints(maxWidth: 360),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(32),
+              color: _cardBg,
+              borderRadius: BorderRadius.circular(28),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.12),
-                  blurRadius: 40,
-                  offset: const Offset(0, 16),
-                ),
-                BoxShadow(
-                  color: AppColors.rosePink.withValues(alpha: 0.12),
-                  blurRadius: 60,
-                  spreadRadius: -12,
-                ),
-                BoxShadow(
-                  color: AppColors.hingePurple.withValues(alpha: 0.08),
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: 32,
-                  spreadRadius: -8,
+                  offset: const Offset(0, 12),
+                ),
+                BoxShadow(
+                  color: AppColors.hingePurple.withValues(alpha: 0.06),
+                  blurRadius: 24,
+                  spreadRadius: -4,
                 ),
               ],
             ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(32),
-              child: Stack(
-                children: [
-                  Positioned.fill(
-                    child: Image.asset(
-                      'assets/1000_F_329046482_SLaH6nGEdvbNGNuSlkUHKnkZdlqYoXu7.jpg',
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                  Positioned.fill(
-                    child: ClipRect(
-                      child: BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                        child: Container(color: Colors.transparent),
+              borderRadius: BorderRadius.circular(28),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(28, 32, 28, 28),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 72,
+                      height: 72,
+                      decoration: BoxDecoration(
+                        color: AppColors.rosePink.withValues(alpha: 0.14),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: AppColors.rosePink.withValues(alpha: 0.3),
+                          width: 1.5,
+                        ),
+                      ),
+                      child: Icon(
+                        Icons.favorite_rounded,
+                        size: 38,
+                        color: AppColors.rosePink,
                       ),
                     ),
-                  ),
-                  Positioned.fill(
-                    child: Container(
-                      color: Colors.white.withValues(alpha: 0.4),
+                    const SizedBox(height: 24),
+                    Text(
+                      l10n.likeLimitReachedTitle,
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.montserrat(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.darkBlack,
+                        height: 1.25,
+                      ),
                     ),
-                  ),
-                  Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const SizedBox(height: 36),
-                      Container(
-                        width: 80,
-                        height: 80,
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              AppColors.rosePink.withValues(alpha: 0.2),
-                              AppColors.hingePurple.withValues(alpha: 0.15),
-                            ],
-                          ),
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.rosePink.withValues(alpha: 0.25),
-                              blurRadius: 20,
-                              spreadRadius: -2,
+                    const SizedBox(height: 8),
+                    Text(
+                      l10n.likeLimitReachedMessage,
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.montserrat(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.darkBlack.withValues(alpha: 0.7),
+                        height: 1.4,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
+                      decoration: BoxDecoration(
+                        color: AppColors.hingePurple.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: AppColors.hingePurple.withValues(alpha: 0.22),
+                          width: 1,
+                        ),
+                      ),
+                      child: Text(
+                        _formatCountdown(),
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.montserrat(
+                          fontSize: 36,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.hingePurple,
+                          letterSpacing: 3,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 28),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: FilledButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          Navigator.of(context).push(
+                            MaterialPageRoute<void>(
+                              builder: (_) => const SubscriptionScreen(),
                             ),
-                          ],
-                        ),
-                        child: Icon(
-                          Icons.favorite_rounded,
-                          size: 44,
-                          color: AppColors.rosePink.withValues(alpha: 0.9),
-                        ),
-                      ),
-                      const SizedBox(height: 28),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 24),
-                        child: Text(
-                          l10n.likeLimitReachedTitle,
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.montserrat(
-                            fontSize: 26,
-                            fontWeight: FontWeight.w800,
-                            color: AppColors.darkBlack,
-                            letterSpacing: -0.5,
+                          );
+                        },
+                        style: FilledButton.styleFrom(
+                          backgroundColor: AppColors.hingePurple,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
                           ),
+                          elevation: 0,
                         ),
-                      ),
-                      const SizedBox(height: 12),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 24),
                         child: Text(
-                          l10n.likeLimitReachedMessage,
-                          textAlign: TextAlign.center,
+                          l10n.likeLimitSubscribeCta,
                           style: GoogleFonts.montserrat(
-                            fontSize: 19,
+                            fontSize: 16,
                             fontWeight: FontWeight.w600,
-                            color: AppColors.darkBlack,
-                            height: 1.5,
                           ),
                         ),
                       ),
-                      const SizedBox(height: 28),
-                      Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 28),
-                        padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 28),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              AppColors.hingePurple.withValues(alpha: 0.12),
-                              AppColors.rosePink.withValues(alpha: 0.08),
-                            ],
-                            begin: isRTL ? Alignment.centerRight : Alignment.centerLeft,
-                            end: isRTL ? Alignment.centerLeft : Alignment.centerRight,
-                          ),
-                          borderRadius: BorderRadius.circular(24),
-                          border: Border.all(
-                            color: AppColors.hingePurple.withValues(alpha: 0.25),
-                            width: 1.5,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.hingePurple.withValues(alpha: 0.06),
-                              blurRadius: 16,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Text(
-                          _formatCountdown(),
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.montserrat(
-                            fontSize: 44,
-                            fontWeight: FontWeight.w800,
-                            color: AppColors.hingePurple,
-                            letterSpacing: 4,
-                          ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextButton(
+                      onPressed: () => widget.onDismiss(),
+                      style: TextButton.styleFrom(
+                        foregroundColor: AppColors.darkBlack.withValues(alpha: 0.65),
+                      ),
+                      child: Text(
+                        l10n.likeLimitOk,
+                        style: GoogleFonts.montserrat(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
-                      const SizedBox(height: 32),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 28),
-                        child: SizedBox(
-                          width: double.infinity,
-                          height: 56,
-                          child: ElevatedButton(
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                              Navigator.of(context).push(
-                                MaterialPageRoute<void>(
-                                  builder: (_) => const SubscriptionScreen(),
-                                ),
-                              );
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.hingePurple,
-                              foregroundColor: Colors.white,
-                              elevation: 4,
-                              shadowColor: AppColors.hingePurple.withValues(alpha: 0.4),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(18),
-                              ),
-                            ),
-                            child: Text(
-                              l10n.likeLimitSubscribeCta,
-                              style: GoogleFonts.montserrat(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 14),
-                      TextButton(
-                        onPressed: () => widget.onDismiss(),
-                        child: Text(
-                          l10n.likeLimitOk,
-                          style: GoogleFonts.montserrat(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.darkBlack,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                    ],
-                  ),
-                ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

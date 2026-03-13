@@ -70,6 +70,7 @@ class _GiftReceivedOverlayState extends State<GiftReceivedOverlay>
     with SingleTickerProviderStateMixin {
   late AnimationController _pulseController;
   late Animation<double> _pulseAnim;
+  Offset _giftDragOffset = Offset.zero;
 
   @override
   void initState() {
@@ -105,10 +106,11 @@ class _GiftReceivedOverlayState extends State<GiftReceivedOverlay>
     }
   }
 
+  /// أيقونة الهدية — الخاتم من 434.png بدون خلفية وبدون تلوين.
   Widget _buildGiftContent() {
     switch (widget.giftType) {
       case _kGiftRing:
-        return RingIconWidget(size: 64, color: AppColors.ringGold, withGlow: true);
+        return RingIconWidget(size: 64, color: null, withGlow: true);
       case _kGiftCoffee:
         return CoffeeIconWidget(size: 64, color: null, withGlow: true);
       default:
@@ -251,82 +253,57 @@ class _GiftReceivedOverlayState extends State<GiftReceivedOverlay>
                           children: [
                             _SenderAvatar(avatarUrl: widget.senderAvatarUrl),
                             const SizedBox(height: 14),
-                            AnimatedBuilder(
-                              animation: _pulseAnim,
-                              builder: (_, __) => Transform.scale(
-                                scale: _pulseAnim.value,
-                                child: Container(
-                                  width: 92,
-                                  height: 92,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    gradient: RadialGradient(
-                                      colors: [
-                                        _giftColor.withValues(alpha: 0.35),
-                                        _giftColor.withValues(alpha: 0.14),
-                                        _giftColor.withValues(alpha: 0.05),
-                                      ],
-                                      stops: const [0.0, 0.5, 1.0],
-                                    ),
-                                    border: Border.all(
-                                      color: _giftColor.withValues(alpha: 0.55),
-                                      width: 1.5,
-                                    ),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: _giftColor.withValues(alpha: 0.4),
-                                        blurRadius: 18,
-                                        spreadRadius: 0,
+                            GestureDetector(
+                              onPanUpdate: (d) {
+                                setState(() {
+                                  _giftDragOffset += d.delta;
+                                });
+                              },
+                              child: AnimatedBuilder(
+                                animation: _pulseAnim,
+                                builder: (_, __) => Transform.translate(
+                                  offset: _giftDragOffset,
+                                  child: Transform.scale(
+                                    scale: _pulseAnim.value,
+                                    child: Container(
+                                      width: 92,
+                                      height: 92,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        gradient: RadialGradient(
+                                          colors: [
+                                            _giftColor.withValues(alpha: 0.35),
+                                            _giftColor.withValues(alpha: 0.14),
+                                            _giftColor.withValues(alpha: 0.05),
+                                          ],
+                                          stops: const [0.0, 0.5, 1.0],
+                                        ),
+                                        border: Border.all(
+                                          color: _giftColor.withValues(alpha: 0.55),
+                                          width: 1.5,
+                                        ),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: _giftColor.withValues(alpha: 0.4),
+                                            blurRadius: 18,
+                                            spreadRadius: 0,
+                                          ),
+                                          BoxShadow(
+                                            color: Colors.black.withValues(alpha: 0.3),
+                                            blurRadius: 10,
+                                            offset: const Offset(0, 4),
+                                          ),
+                                        ],
                                       ),
-                                      BoxShadow(
-                                        color: Colors.black.withValues(alpha: 0.3),
-                                        blurRadius: 10,
-                                        offset: const Offset(0, 4),
-                                      ),
-                                    ],
+                                      child: Center(child: _buildGiftContent()),
+                                    ),
                                   ),
-                                  child: Center(child: _buildGiftContent()),
                                 ),
                               ),
                             ),
                           ],
                         ),
                       ],
-                    ),
-                    const SizedBox(height: 22),
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(14),
-                        color: Colors.white.withValues(alpha: 0.08),
-                        border: Border.all(
-                          color: AppColors.hingePurple.withValues(alpha: 0.35),
-                          width: 1,
-                        ),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            l10n.seriousMessageFrom(widget.senderName),
-                            style: GoogleFonts.montserrat(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white.withValues(alpha: 0.95),
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            widget.giftMessage.isEmpty ? '—' : widget.giftMessage,
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.white.withValues(alpha: 0.96),
-                              height: 1.4,
-                            ),
-                          ),
-                        ],
-                      ),
                     ),
                     const SizedBox(height: 24),
                     Row(

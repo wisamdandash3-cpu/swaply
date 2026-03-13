@@ -101,8 +101,18 @@ class _PaperPlaneGiftPainter extends CustomPainter {
 
     // نجمة صغيرة على الرباط
     final starCenter = Offset(center.dx + 6 * scale, center.dy - 2 * scale);
-    _drawStar(canvas, starCenter, 4.5 * scale, Paint()..color = Colors.white.withValues(alpha: 0.98));
-    _drawStar(canvas, starCenter, 3.5 * scale, Paint()..color = _gold.withValues(alpha: 0.5));
+    _drawStar(
+      canvas,
+      starCenter,
+      4.5 * scale,
+      Paint()..color = Colors.white.withValues(alpha: 0.98),
+    );
+    _drawStar(
+      canvas,
+      starCenter,
+      3.5 * scale,
+      Paint()..color = _gold.withValues(alpha: 0.5),
+    );
 
     canvas.restore();
 
@@ -112,14 +122,28 @@ class _PaperPlaneGiftPainter extends CustomPainter {
       for (var i = 0; i < 8; i++) {
         final angle = (i / 8) * 2 * math.pi + progress * 3;
         final r = 38 * scale + 12 * math.sin(progress * 5);
-        final o = Offset(center.dx + r * math.cos(angle), center.dy + r * math.sin(angle));
-        canvas.drawCircle(o, 2.5 * scale, Paint()..color = _gold.withValues(alpha: alpha));
+        final o = Offset(
+          center.dx + r * math.cos(angle),
+          center.dy + r * math.sin(angle),
+        );
+        canvas.drawCircle(
+          o,
+          2.5 * scale,
+          Paint()..color = _gold.withValues(alpha: alpha),
+        );
       }
       for (var i = 0; i < 4; i++) {
         final angle = (i / 4) * 2 * math.pi + progress * 2;
         final r = 48 * scale;
-        final o = Offset(center.dx + r * math.cos(angle), center.dy + r * math.sin(angle));
-        canvas.drawCircle(o, 1.5 * scale, Paint()..color = _gold.withValues(alpha: alpha * 0.6));
+        final o = Offset(
+          center.dx + r * math.cos(angle),
+          center.dy + r * math.sin(angle),
+        );
+        canvas.drawCircle(
+          o,
+          1.5 * scale,
+          Paint()..color = _gold.withValues(alpha: alpha * 0.6),
+        );
       }
     }
   }
@@ -132,23 +156,24 @@ class _PaperPlaneGiftPainter extends CustomPainter {
       final angle = (i * math.pi / points) - math.pi / 2;
       final x = center.dx + r * math.cos(angle);
       final y = center.dy + r * math.sin(angle);
-      if (i == 0) path.moveTo(x, y);
-      else path.lineTo(x, y);
+      if (i == 0) {
+        path.moveTo(x, y);
+      } else {
+        path.lineTo(x, y);
+      }
     }
     path.close();
     canvas.drawPath(path, paint);
   }
 
   @override
-  bool shouldRepaint(covariant _PaperPlaneGiftPainter old) => old.progress != progress;
+  bool shouldRepaint(covariant _PaperPlaneGiftPainter old) =>
+      old.progress != progress;
 }
 
 /// عرض رسالة «اختر هدية» مع ورقة طائرة كهدية تطير وتختفي عند أعلى الشاشة (الكاميرا الأمامية).
 class FlyingGiftMessageOverlay extends StatefulWidget {
-  const FlyingGiftMessageOverlay({
-    super.key,
-    required this.message,
-  });
+  const FlyingGiftMessageOverlay({super.key, required this.message});
 
   final String message;
 
@@ -168,7 +193,8 @@ class FlyingGiftMessageOverlay extends StatefulWidget {
   }
 
   @override
-  State<FlyingGiftMessageOverlay> createState() => _FlyingGiftMessageOverlayState();
+  State<FlyingGiftMessageOverlay> createState() =>
+      _FlyingGiftMessageOverlayState();
 }
 
 class _FlyingGiftMessageOverlayState extends State<FlyingGiftMessageOverlay>
@@ -184,9 +210,10 @@ class _FlyingGiftMessageOverlayState extends State<FlyingGiftMessageOverlay>
       vsync: this,
       duration: const Duration(milliseconds: 1600),
     );
-    _flyAnim = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeIn),
-    );
+    _flyAnim = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeIn));
     _fadeAnim = Tween<double>(begin: 1.0, end: 0.0).animate(
       CurvedAnimation(
         parent: _controller,
@@ -238,19 +265,28 @@ class _FlyingGiftMessageOverlayState extends State<FlyingGiftMessageOverlay>
                           children: [
                             CustomPaint(
                               size: const Size(80, 80),
-                              painter: _PaperPlaneGiftPainter(progress: _flyAnim.value),
+                              painter: _PaperPlaneGiftPainter(
+                                progress: _flyAnim.value,
+                              ),
                             ),
                             const SizedBox(height: 12),
                             Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 24),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                              ),
                               child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 16),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 22,
+                                  vertical: 16,
+                                ),
                                 decoration: BoxDecoration(
                                   gradient: LinearGradient(
                                     begin: Alignment.topLeft,
                                     end: Alignment.bottomRight,
                                     colors: [
-                                      AppColors.hingePurple.withValues(alpha: 0.95),
+                                      AppColors.hingePurple.withValues(
+                                        alpha: 0.95,
+                                      ),
                                       AppColors.hingePurple,
                                     ],
                                   ),
@@ -261,12 +297,16 @@ class _FlyingGiftMessageOverlayState extends State<FlyingGiftMessageOverlay>
                                   ),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: AppColors.hingePurple.withValues(alpha: 0.35),
+                                      color: AppColors.hingePurple.withValues(
+                                        alpha: 0.35,
+                                      ),
                                       blurRadius: 16,
                                       offset: const Offset(0, 4),
                                     ),
                                     BoxShadow(
-                                      color: Colors.black.withValues(alpha: 0.15),
+                                      color: Colors.black.withValues(
+                                        alpha: 0.15,
+                                      ),
                                       blurRadius: 12,
                                       offset: const Offset(0, 4),
                                     ),

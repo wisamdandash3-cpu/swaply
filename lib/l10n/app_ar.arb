@@ -528,6 +528,11 @@
   "swaplySubscription": "اشتراك Swaply",
   "featureSendGifts": "إرسال الهدايا",
   "tapToViewConversation": "اضغط لعرض المحادثة",
+  "chatFilterTitle": "فلترة المحادثات",
+  "chatFilterNewest": "الأحدث",
+  "chatFilterOldest": "الأقدم",
+  "chatFilterGiftsOnly": "من أرسل هدايا",
+  "chatFilterUnreadOnly": "رسائل غير مقروءة",
   "newMatchLabel": "جديد",
   "block": "حظر",
   "sendReport": "إرسال",
@@ -547,6 +552,8 @@
   "complaintAddEvidence": "إضافة صورة",
   "complaintReasonRequired": "يرجى إدخال السبب",
   "complaintEvidenceRequired": "يرجى إضافة صورة كدليل",
+  "submitComplaint": "إرسال شكوى",
+  "submitComplaintDescription": "صف المشكلة وأرفق لقطة شاشة. سنراجعها.",
   "profile": "البروفايل",
   "message": "رسالة",
   "profileLoadFailed": "فشل تحميل البروفايل",
@@ -640,5 +647,13 @@
   "messageCopied": "تم النسخ",
   "youCrushedWithSwaply": "تعرفت مع\nسوابلي",
   "swaplyTeam": "فريق سوابلي",
-  "swaplyWelcomeMessage": "مرحباً بك في سوابلي. أمانك ورضاك أولويتنا. نعمل كل يوم لتجربة آمنة وممتعة. ابدأ المحادثة وستجد شريكك المناسب."
+  "swaplyWelcomeMessage": "مرحباً بك في سوابلي. أمانك ورضاك أولويتنا. نعمل كل يوم لتجربة آمنة وممتعة. ابدأ المحادثة وستجد شريكك المناسب.",
+  "swaplyWelcomeMessageWithName": "أهلاً بك يا {userName} في مجتمع Swaply!\n\nيسعدنا جداً انضمامك إلينا. نحن هنا لنضمن لك رحلة ممتعة وآمنة تماماً، حيث نضع خصوصيتك ورضاك على رأس أولوياتنا في كل خطوة تخطوها داخل التطبيق.\n\nفريقنا يعمل جاهداً خلف الكواليس لتوفير بيئة تفاعلية تليق بتطلعاتك وتساعدك على بناء اتصالات حقيقية وناجحة. لا تتردد في استكشاف المزايا والبدء في محادثتك الأولى الآن.. \"المطابقة\" (Match) المثالية بانتظارك!\n\nمع أطيب التحيات،\nفريق Swaply",
+  "@swaplyWelcomeMessageWithName": {
+    "placeholders": {
+      "userName": {
+        "type": "String"
+      }
+    }
+  }
 }

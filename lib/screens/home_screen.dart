@@ -1,8 +1,12 @@
 import 'dart:async';
 import 'dart:io' show Platform;
 
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/services.dart' show PlatformException;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
+import 'package:purchases_ui_flutter/purchases_ui_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../app_colors.dart';
@@ -17,7 +21,9 @@ import '../services/profile_display_service.dart';
 import '../services/profile_like_service.dart';
 import '../services/gift_received_storage.dart';
 import '../generated/l10n/app_localizations.dart';
+import '../services/broadcast_unread_service.dart';
 import '../services/chat_read_service.dart';
+import '../services/complaint_service.dart';
 import '../services/message_service.dart';
 import '../utils/profile_completion.dart';
 import '../services/profile_answer_service.dart';
@@ -36,6 +42,105 @@ import 'likes_you_screen.dart';
 import 'subscription_screen.dart';
 import 'profile_screen.dart';
 
+/// يعرض Paywall RevenueCat لشراء الورود على iOS/Android، وإلا يعرض شيت الشراء القديم.
+Future<void> showRevenueCatPaywallForRoses(
+  BuildContext context, {
+  VoidCallback? onBalanceUpdated,
+}) async {
+  if (kIsWeb) {
+    showBuyRosesSheet(context);
+    return;
+  }
+  if (!Platform.isIOS && !Platform.isAndroid) {
+    showBuyRosesSheet(context);
+    return;
+  }
+  try {
+    final offerings = await Purchases.getOfferings();
+    if (offerings.current == null ||
+        offerings.current!.availablePackages.isEmpty) {
+      if (context.mounted) showBuyRosesSheet(context);
+      return;
+    }
+    final result = await RevenueCatUI.presentPaywall(
+      offering: offerings.current,
+      displayCloseButton: true,
+    );
+    if (context.mounted) {
+      await _handlePaywallResult(context, result, onBalanceUpdated);
+    }
+  } on PlatformException catch (_) {
+    if (context.mounted) showBuyRosesSheet(context);
+  } catch (_) {
+    if (context.mounted) showBuyRosesSheet(context);
+  }
+}
+
+/// يعالج نتيجة الـ Paywall: عند الشراء الناجح يحدّث رصيد الورود في Supabase ثم الواجهة.
+Future<void> _handlePaywallResult(
+  BuildContext context,
+  PaywallResult result,
+  VoidCallback? onBalanceUpdated,
+) async {
+  if (result != PaywallResult.purchased && result != PaywallResult.restored) {
+    return;
+  }
+  final userId = Supabase.instance.client.auth.currentUser?.id;
+  if (userId == null || !context.mounted) return;
+  try {
+    final customerInfo = await Purchases.getCustomerInfo();
+    final transactions = customerInfo.nonSubscriptionTransactions;
+    if (transactions.isEmpty) {
+      onBalanceUpdated?.call();
+      return;
+    }
+    final last = transactions.last;
+    final productSku = last.productIdentifier;
+    final rosesCount = _rosesCountFromProductSku(productSku);
+    final res = await Supabase.instance.client.functions.invoke(
+      'process-gift-purchase',
+      body: {'user_id': userId, 'product_sku': productSku},
+    );
+    if (!context.mounted) return;
+    if (res.status == 200 && res.data != null) {
+      onBalanceUpdated?.call();
+      final l10n = AppLocalizations.of(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.rosesAdded(rosesCount)),
+          backgroundColor: AppColors.forestGreen,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context).paymentComingSoonGifts),
+          backgroundColor: AppColors.hingePurple,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  } catch (_) {
+    if (context.mounted) {
+      onBalanceUpdated?.call();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context).paymentComingSoonGifts),
+          backgroundColor: AppColors.hingePurple,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+}
+
+/// يستخرج عدد الورود من معرف المنتج (مثل roses_10 → 10).
+int _rosesCountFromProductSku(String productSku) {
+  final match = RegExp(r'roses_(\d+)').firstMatch(productSku);
+  return match != null ? (int.tryParse(match.group(1)!) ?? 1) : 1;
+}
+
 /// الصفحة الرئيسية بأسلوب Hinge: تبويبات Discover، Likes you، Matches.
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -46,8 +151,10 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   int _currentIndex = 0;
+  ChatFilterType _chatFilterType = ChatFilterType.newest;
   int _chatBadgeCount = 0;
   int _likesYouBadgeCount = 0;
+  int _profileBadgeCount = 0;
   int _rosesBalance = 0;
   String? _profileAvatarUrl;
 
@@ -92,6 +199,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         await Future.delayed(const Duration(milliseconds: 100));
         if (!mounted) return;
         _loadProfileAvatar();
+        _loadProfileBadge();
         _loadRosesBalance();
         _updateLastActive();
       });
@@ -114,6 +222,17 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     } catch (_) {}
   }
 
+  Future<void> _loadProfileBadge() async {
+    final userId = Supabase.instance.client.auth.currentUser?.id;
+    if (userId == null) return;
+    try {
+      final count = await ComplaintService().getAdminRepliesCount(userId);
+      if (mounted) setState(() => _profileBadgeCount = count);
+    } catch (_) {
+      if (mounted) setState(() => _profileBadgeCount = 0);
+    }
+  }
+
   Future<void> _loadRosesBalance() async {
     try {
       final balance = await WalletService().getBalance().timeout(
@@ -124,10 +243,14 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 
   /// عند الضغط على زر الوردة: عرض شاشة اختيار نوع الهدية. إن [recipientProfileId] معرّف المستلم يُنفّذ الإرسال الفعلي.
-  void _showGiftChoiceSheet(BuildContext context, [String? recipientProfileId]) {
+  void _showGiftChoiceSheet(
+    BuildContext context, [
+    String? recipientProfileId,
+  ]) {
     showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
+      isScrollControlled: true,
       builder: (modalContext) => _GiftChoiceSheetContent(
         recipientProfileId: recipientProfileId,
         parentContext: context,
@@ -213,9 +336,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             .updateLastActive(userId)
             .timeout(const Duration(seconds: 3));
         final offsetMinutes = DateTime.now().timeZoneOffset.inMinutes;
-        await ProfileService().updateTimezone(userId, offsetMinutes).timeout(
-          const Duration(seconds: 2),
-        );
+        await ProfileService()
+            .updateTimezone(userId, offsetMinutes)
+            .timeout(const Duration(seconds: 2));
       } catch (_) {}
     }
   }
@@ -284,7 +407,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       final unreadMap = await ChatReadService()
           .getUnreadCountsByPartner(userId, ids)
           .timeout(const Duration(seconds: 5));
-      final count = unreadMap.values.where((c) => c > 0).length;
+      int count = unreadMap.values.where((c) => c > 0).length;
+      final broadcastUnread = await getBroadcastUnreadCount();
+      if (broadcastUnread > 0) count += 1;
       if (mounted) setState(() => _chatBadgeCount = count);
     } catch (_) {
       if (mounted) setState(() => _chatBadgeCount = 0);
@@ -313,8 +438,18 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 
   /// تبويب يُبنى فقط عند اختياره لأول مرة (تبويب كسول) — يقلل العمل عند الرسم الأول.
-  static Widget _lazyTab(int index, int currentIndex, Widget Function() build) {
-    return _LazyTabSlot(isSelected: index == currentIndex, tabBuilder: build);
+  /// [key] إن وُجد يتغيّر مع الفلتر لتبويب الدردشة فيُعاد بناء المحتوى عند تغيّر الفلتر.
+  static Widget _lazyTab(
+    int index,
+    int currentIndex,
+    Widget Function() build, {
+    Key? key,
+  }) {
+    return _LazyTabSlot(
+      key: key,
+      isSelected: index == currentIndex,
+      tabBuilder: build,
+    );
   }
 
   List<Widget> _buildTabs(int currentIndex) => [
@@ -356,6 +491,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       currentIndex,
       () => ChatScreen(
         isVisible: true,
+        filterType: _chatFilterType,
         onGoToSubscription: () {
           Navigator.of(context).push(
             MaterialPageRoute<void>(
@@ -366,6 +502,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         onGoToLikedYou: () => setState(() => _currentIndex = 2),
         onConversationsChanged: _loadChatBadge,
       ),
+      key: ValueKey<String>('chat_filter_${_chatFilterType.name}'),
     ),
     _lazyTab(4, currentIndex, () => ProfileScreen(isVisible: true)),
   ];
@@ -398,18 +535,30 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             _RosesBalancePill(
               roses: _rosesBalance,
               l10n: l10n,
-              onTap: () => showBuyRosesSheet(context),
+              onTap: () => showRevenueCatPaywallForRoses(
+                context,
+                onBalanceUpdated: _loadRosesBalance,
+              ),
             ),
-          IconButton(
-            icon: const Icon(Icons.tune_outlined),
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (context) => const FilterScreen(),
-                ),
-              );
-            },
-          ),
+          if (_currentIndex == 3)
+            _ChatFilterButton(
+              currentFilter: _chatFilterType,
+              l10n: l10n,
+              onFilterSelected: (type) {
+                setState(() => _chatFilterType = type);
+              },
+            )
+          else if (_currentIndex != 3)
+            IconButton(
+              icon: const Icon(Icons.tune_outlined),
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (context) => const FilterScreen(),
+                  ),
+                );
+              },
+            ),
           if (_currentIndex == 4)
             IconButton(
               icon: const Icon(Icons.settings_outlined),
@@ -456,7 +605,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             _loadLikesYouBadge(); // تحديث شارة "معجب بك" عند فتح التبويب
           }
           if (i == 4) {
-            _loadProfileAvatar(); // تحديث صورة البروفايل في الشريط السفلي
+            _loadProfileAvatar();
+            _loadProfileBadge(); // تحديث شارة ردود الدعم
           }
           if (i == 3) {
             _loadChatBadge();
@@ -469,6 +619,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         l10n: l10n,
         chatBadgeCount: _chatBadgeCount,
         likesYouBadgeCount: _likesYouBadgeCount,
+        profileBadgeCount: _profileBadgeCount,
         profileAvatarUrl: _profileAvatarUrl,
         profileDisplayName: _profileDisplayName,
       ),
@@ -488,15 +639,18 @@ class _GiftChoiceSheetContent extends StatefulWidget {
 
   /// معرّف المستلم عند الإرسال من تبويب مميزون — إن وُجد يُنفّذ الإرسال الفعلي.
   final String? recipientProfileId;
+
   /// سياق الشاشة الرئيسية — لعرض الورقة الطائرة بعد إغلاق الشيت.
   final BuildContext? parentContext;
   final void Function(String? giftType) onBuyRoses;
   final VoidCallback onDismiss;
+
   /// يُستدعى بعد إرسال هدية بنجاح — لتحديث عرض الرصيد في الشريط.
   final VoidCallback? onGiftSent;
 
   @override
-  State<_GiftChoiceSheetContent> createState() => _GiftChoiceSheetContentState();
+  State<_GiftChoiceSheetContent> createState() =>
+      _GiftChoiceSheetContentState();
 }
 
 class _GiftChoiceSheetContentState extends State<_GiftChoiceSheetContent> {
@@ -530,8 +684,12 @@ class _GiftChoiceSheetContentState extends State<_GiftChoiceSheetContent> {
     final pronounSetting = userId != null
         ? await _userSettings.getPreferredRecipientPronoun(userId)
         : 'male';
-    final pronoun = pronounSetting == 'female' ? l10n.pronounHer : l10n.pronounHim;
-    if (mounted) setState(() => _giftHint = l10n.giftMessageWhisperHint(pronoun));
+    final pronoun = pronounSetting == 'female'
+        ? l10n.pronounHer
+        : l10n.pronounHim;
+    if (mounted) {
+      setState(() => _giftHint = l10n.giftMessageWhisperHint(pronoun));
+    }
   }
 
   @override
@@ -548,10 +706,12 @@ class _GiftChoiceSheetContentState extends State<_GiftChoiceSheetContent> {
 
   Future<void> _loadBalance() async {
     final b = await _walletService.getBalance();
-    if (mounted) setState(() {
-      _balance = b;
-      _loading = false;
-    });
+    if (mounted) {
+      setState(() {
+        _balance = b;
+        _loading = false;
+      });
+    }
   }
 
   Future<void> _onSendPressed() async {
@@ -580,21 +740,22 @@ class _GiftChoiceSheetContentState extends State<_GiftChoiceSheetContent> {
     final giftType = _selectedGiftType!;
     final messageText = _messageController.text.trim();
     try {
-      final deducted = await _walletService.deductGift(giftType).timeout(
-        const Duration(seconds: 10),
-        onTimeout: () => false,
-      );
+      final deducted = await _walletService
+          .deductGift(giftType)
+          .timeout(const Duration(seconds: 10), onTimeout: () => false);
       if (!mounted) return;
       if (!deducted) {
         widget.onBuyRoses(giftType);
         return;
       }
       try {
-        await _likeService.sendMatchGift(
-          toUserId: recipientId,
-          giftType: giftType,
-          message: messageText,
-        ).timeout(const Duration(seconds: 15));
+        await _likeService
+            .sendMatchGift(
+              toUserId: recipientId,
+              giftType: giftType,
+              message: messageText,
+            )
+            .timeout(const Duration(seconds: 15));
       } on PostgrestException catch (e) {
         if (e.code == 'PGRST204' ||
             (e.message.contains('gift_message') ||
@@ -606,12 +767,14 @@ class _GiftChoiceSheetContentState extends State<_GiftChoiceSheetContent> {
         rethrow;
       }
       if (!mounted) return;
-      final result = await _messageService.sendMessage(
-        senderId: userId,
-        receiverId: recipientId,
-        content: messageText,
-        photoUrl: giftType,
-      ).timeout(const Duration(seconds: 15));
+      final result = await _messageService
+          .sendMessage(
+            senderId: userId,
+            receiverId: recipientId,
+            content: messageText,
+            photoUrl: giftType,
+          )
+          .timeout(const Duration(seconds: 15));
       if (!mounted) return;
       if (!result.isOk) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -662,218 +825,235 @@ class _GiftChoiceSheetContentState extends State<_GiftChoiceSheetContent> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    return Container(
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Color(0xFFFFFBFE),
-            Color(0xFFF3E8F4),
-            Color(0xFFFCE4EC),
+    final screenHeight = MediaQuery.sizeOf(context).height;
+    final bottomPadding = MediaQuery.paddingOf(context).bottom;
+    final maxHeight = (screenHeight * 0.78).clamp(380.0, screenHeight - 56.0);
+    return SizedBox(
+      height: maxHeight,
+      child: Container(
+        decoration: BoxDecoration(
+          color: const Color(0xFFFAFAFA),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+          border: Border.all(color: const Color(0xFFE0E0E0), width: 1),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.darkBlack.withValues(alpha: 0.08),
+              blurRadius: 20,
+              offset: const Offset(0, -2),
+            ),
           ],
         ),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.hingePurple.withValues(alpha: 0.12),
-            blurRadius: 24,
-            offset: const Offset(0, -4),
-          ),
-        ],
-      ),
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(24, 28, 24, 32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // أيقونة قلب في دائرة بنفسجية — تصميم مميز لمميزون
-            Container(
-              width: 64,
-              height: 64,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    AppColors.hingePurple.withValues(alpha: 0.9),
-                    AppColors.rosePink.withValues(alpha: 0.85),
+        child: SingleChildScrollView(
+          padding: EdgeInsets.fromLTRB(24, 28, 24, 20 + bottomPadding),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: const Color(0xFF37474F),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.darkBlack.withValues(alpha: 0.2),
+                      blurRadius: 12,
+                      offset: const Offset(0, 2),
+                    ),
                   ],
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.hingePurple.withValues(alpha: 0.35),
-                    blurRadius: 16,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: const Icon(
-                Icons.favorite_rounded,
-                size: 32,
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              l10n.sendNiceMessageTitle,
-              style: GoogleFonts.montserrat(
-                fontSize: 17,
-                fontWeight: FontWeight.bold,
-                color: AppColors.darkBlack,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 6),
-            Text(
-              l10n.sendGift,
-              style: GoogleFonts.montserrat(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: AppColors.hingePurple.withValues(alpha: 0.9),
-              ),
-              textAlign: TextAlign.center,
-            ),
-            if (_loading)
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 28),
-                child: CircularProgressIndicator(color: AppColors.hingePurple),
-              )
-            else ...[
-              const SizedBox(height: 24),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _PulsatingGiftCard(
-                    child: _GiftChoiceCard(
-                      imagePath: 'assets/34.png',
-                      label: l10n.giftRose,
-                      price: '€${GiftPricing.formatCents(GiftPricing.rosePriceCents)}',
-                      accentColor: const Color(0xFFD81B60),
-                      cardColor: const Color(0xFFFFE4EC),
-                      hasBalance: _balance?.roses != null && _balance!.roses > 0,
-                      selected: _selectedGiftType == 'rose_gift',
-                      onTap: () => setState(() => _selectedGiftType = 'rose_gift'),
-                      onBuyNow: () => widget.onBuyRoses('rose_gift'),
-                    ),
-                  ),
-                  _PulsatingGiftCard(
-                    child: _GiftChoiceCard(
-                      imagePath: 'assets/ring_icon.png',
-                      label: l10n.giftRing,
-                      price: '€${GiftPricing.formatCents(GiftPricing.ringPriceCents)}',
-                      accentColor: const Color(0xFFB8860B),
-                      cardColor: const Color(0xFFFFF8E1),
-                      hasBalance: _balance?.rings != null && _balance!.rings > 0,
-                      selected: _selectedGiftType == 'ring_gift',
-                      onTap: () => setState(() => _selectedGiftType = 'ring_gift'),
-                      onBuyNow: () => widget.onBuyRoses('ring_gift'),
-                    ),
-                  ),
-                  _PulsatingGiftCard(
-                    child: _GiftChoiceCard(
-                      imagePath: 'assets/coffee_icon.png',
-                      label: l10n.giftCoffee,
-                      price: '€${GiftPricing.formatCents(GiftPricing.coffeePriceCents)}',
-                      accentColor: const Color(0xFF5D4037),
-                      cardColor: const Color(0xFFEFEBE9),
-                      hasBalance: _balance?.coffee != null && _balance!.coffee > 0,
-                      selected: _selectedGiftType == 'coffee_gift',
-                      onTap: () => setState(() => _selectedGiftType = 'coffee_gift'),
-                      onBuyNow: () => widget.onBuyRoses('coffee_gift'),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              TextField(
-                controller: _messageController,
-                maxLines: 3,
-                decoration: InputDecoration(
-                  hintText: _giftHint ?? l10n.sendNiceMessageHint,
-                  hintStyle: GoogleFonts.montserrat(
-                    fontSize: 14,
-                    color: Colors.grey.shade600,
-                  ),
-                  filled: true,
-                  fillColor: Colors.grey.shade100,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide(
-                      color: AppColors.hingePurple.withValues(alpha: 0.2),
-                    ),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide(
-                      color: AppColors.hingePurple.withValues(alpha: 0.25),
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide(
-                      color: AppColors.hingePurple,
-                      width: 1.5,
-                    ),
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 18,
-                    vertical: 14,
-                  ),
+                child: const Icon(
+                  Icons.favorite_rounded,
+                  size: 32,
+                  color: Colors.white,
                 ),
               ),
               const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                  onPressed: _canSend ? _onSendPressed : null,
-                  style: FilledButton.styleFrom(
-                    backgroundColor: _canSend
-                        ? AppColors.hingePurple
-                        : Colors.grey.shade400,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    elevation: 0,
-                  ),
-                  child: _sending
-                      ? SizedBox(
-                          height: 22,
-                          width: 22,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              Colors.white,
-                            ),
-                          ),
-                        )
-                      : Text(
-                          l10n.sendNiceMessageButton,
-                          style: GoogleFonts.montserrat(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
+              Text(
+                l10n.sendNiceMessageTitle,
+                style: GoogleFonts.montserrat(
+                  fontSize: 17,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.darkBlack,
                 ),
+                textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 12),
-              TextButton.icon(
-                onPressed: () => widget.onBuyRoses(null),
-                icon: Icon(Icons.add_shopping_cart, size: 18, color: AppColors.hingePurple),
-                label: Text(
-                  l10n.buyRoses,
-                  style: GoogleFonts.montserrat(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
+              const SizedBox(height: 6),
+              Text(
+                l10n.sendGift,
+                style: GoogleFonts.montserrat(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF546E7A),
+                ),
+                textAlign: TextAlign.center,
+              ),
+              if (_loading)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 28),
+                  child: CircularProgressIndicator(
                     color: AppColors.hingePurple,
                   ),
+                )
+              else ...[
+                const SizedBox(height: 24),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _PulsatingGiftCard(
+                      child: _GiftChoiceCard(
+                        imagePath: 'assets/34.png',
+                        label: l10n.giftRose,
+                        price:
+                            '€${GiftPricing.formatCents(GiftPricing.rosePriceCents)}',
+                        accentColor: const Color(0xFF37474F),
+                        cardColor: const Color(0xFFFAFAFA),
+                        hasBalance:
+                            _balance?.roses != null && _balance!.roses > 0,
+                        selected: _selectedGiftType == 'rose_gift',
+                        onTap: () =>
+                            setState(() => _selectedGiftType = 'rose_gift'),
+                        onBuyNow: () => widget.onBuyRoses('rose_gift'),
+                      ),
+                    ),
+                    _PulsatingGiftCard(
+                      child: _GiftChoiceCard(
+                        imagePath: 'assets/434.png',
+                        label: l10n.giftRing,
+                        price:
+                            '€${GiftPricing.formatCents(GiftPricing.ringPriceCents)}',
+                        accentColor: const Color(0xFF37474F),
+                        cardColor: const Color(0xFFFAFAFA),
+                        hasBalance:
+                            _balance?.rings != null && _balance!.rings > 0,
+                        selected: _selectedGiftType == 'ring_gift',
+                        onTap: () =>
+                            setState(() => _selectedGiftType = 'ring_gift'),
+                        onBuyNow: () => widget.onBuyRoses('ring_gift'),
+                      ),
+                    ),
+                    _PulsatingGiftCard(
+                      child: _GiftChoiceCard(
+                        imagePath: 'assets/coffee_icon.png',
+                        label: l10n.giftCoffee,
+                        price:
+                            '€${GiftPricing.formatCents(GiftPricing.coffeePriceCents)}',
+                        accentColor: const Color(0xFF37474F),
+                        cardColor: const Color(0xFFFAFAFA),
+                        hasBalance:
+                            _balance?.coffee != null && _balance!.coffee > 0,
+                        selected: _selectedGiftType == 'coffee_gift',
+                        onTap: () =>
+                            setState(() => _selectedGiftType = 'coffee_gift'),
+                        onBuyNow: () => widget.onBuyRoses('coffee_gift'),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
+                if (_selectedGiftType == null) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    l10n.selectGiftToSend,
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.montserrat(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0xFF546E7A),
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 20),
+                TextField(
+                  controller: _messageController,
+                  maxLines: 3,
+                  decoration: InputDecoration(
+                    hintText: _giftHint ?? l10n.sendNiceMessageHint,
+                    hintStyle: GoogleFonts.montserrat(
+                      fontSize: 14,
+                      color: Colors.grey.shade600,
+                    ),
+                    filled: true,
+                    fillColor: Colors.grey.shade100,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: const BorderSide(
+                        color: Color(0xFF37474F),
+                        width: 1.5,
+                      ),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 18,
+                      vertical: 14,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton(
+                    onPressed: _canSend ? _onSendPressed : null,
+                    style: FilledButton.styleFrom(
+                      backgroundColor: _canSend
+                          ? const Color(0xFF37474F)
+                          : Colors.grey.shade400,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      elevation: _canSend ? 2 : 0,
+                      shadowColor: _canSend
+                          ? AppColors.darkBlack.withValues(alpha: 0.2)
+                          : null,
+                    ),
+                    child: _sending
+                        ? SizedBox(
+                            height: 22,
+                            width: 22,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white,
+                              ),
+                            ),
+                          )
+                        : Text(
+                            l10n.sendNiceMessageButton,
+                            style: GoogleFonts.montserrat(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextButton.icon(
+                  onPressed: () => widget.onBuyRoses(null),
+                  icon: Icon(
+                    Icons.add_shopping_cart,
+                    size: 18,
+                    color: AppColors.hingePurple,
+                  ),
+                  label: Text(
+                    l10n.buyRoses,
+                    style: GoogleFonts.montserrat(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.hingePurple,
+                    ),
+                  ),
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
@@ -902,9 +1082,10 @@ class _PulsatingGiftCardState extends State<_PulsatingGiftCard>
       vsync: this,
       duration: const Duration(milliseconds: 1800),
     )..repeat(reverse: true);
-    _scale = Tween<double>(begin: 0.98, end: 1.05).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+    _scale = Tween<double>(
+      begin: 0.98,
+      end: 1.05,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
   }
 
   @override
@@ -917,10 +1098,8 @@ class _PulsatingGiftCardState extends State<_PulsatingGiftCard>
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: _scale,
-      builder: (context, child) => Transform.scale(
-        scale: _scale.value,
-        child: child,
-      ),
+      builder: (context, child) =>
+          Transform.scale(scale: _scale.value, child: child),
       child: widget.child,
     );
   }
@@ -956,80 +1135,289 @@ class _GiftChoiceCard extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: hasBalance ? onTap : onBuyNow,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         child: Container(
-          padding: const EdgeInsets.all(14),
+          height: 152,
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
           decoration: BoxDecoration(
-            border: Border.all(
-              color: selected ? accentColor : accentColor.withValues(alpha: 0.4),
-              width: selected ? 2.5 : 1,
-            ),
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(20),
             color: cardColor,
-            boxShadow: selected
-                ? [
-                    BoxShadow(
-                      color: accentColor.withValues(alpha: 0.25),
-                      blurRadius: 12,
-                      spreadRadius: 0,
-                    ),
-                  ]
-                : null,
+            border: Border.all(
+              color: selected ? accentColor : const Color(0xFFE0E0E0),
+              width: selected ? 3 : 1.5,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.darkBlack.withValues(alpha: 0.06),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+              if (selected)
+                BoxShadow(
+                  color: accentColor.withValues(alpha: 0.25),
+                  blurRadius: 12,
+                  offset: const Offset(0, 2),
+                ),
+            ],
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
+          child: Stack(
+            clipBehavior: Clip.none,
             children: [
-              Image.asset(
-                imagePath,
-                width: 44,
-                height: 44,
-                fit: BoxFit.contain,
-                errorBuilder: (_, __, ___) => Icon(
-                  Icons.card_giftcard_rounded,
-                  size: 44,
-                  color: accentColor,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                label,
-                style: GoogleFonts.montserrat(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 13,
-                  color: AppColors.darkBlack,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 4),
-              if (!hasBalance)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: accentColor.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    l10n.buyNow,
-                    style: GoogleFonts.montserrat(
-                      fontSize: 11,
-                      color: accentColor,
-                      fontWeight: FontWeight.w600,
+              if (selected)
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  top: 0,
+                  bottom: 0,
+                  child: Container(
+                    margin: const EdgeInsets.all(3),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(17),
+                      border: Border.all(
+                        color: accentColor,
+                        width: 2,
+                      ),
                     ),
                   ),
-                )
-              else
-                Text(
-                  price,
-                  style: GoogleFonts.montserrat(
-                    fontSize: 12,
-                    color: accentColor,
-                    fontWeight: FontWeight.w500,
+                ),
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+              Expanded(
+                child: Center(
+                  child: Container(
+                    width: 64,
+                    height: 64,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white,
+                      border: Border.all(
+                        color: selected ? accentColor : const Color(0xFFE0E0E0),
+                        width: selected ? 2.5 : 1.5,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.darkBlack.withValues(alpha: 0.06),
+                          blurRadius: 6,
+                          offset: const Offset(0, 1),
+                        ),
+                      ],
+                    ),
+                    child: Center(
+                      child: Image.asset(
+                        imagePath,
+                        width: 40,
+                        height: 40,
+                        fit: BoxFit.contain,
+                        errorBuilder: (_, __, ___) => Icon(
+                          Icons.card_giftcard_rounded,
+                          size: 32,
+                          color: accentColor,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(
+                height: 48,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      label,
+                      style: GoogleFonts.montserrat(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 14,
+                        color: AppColors.darkBlack,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 4),
+                    if (!hasBalance)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: accentColor.withValues(alpha: 0.25),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          l10n.buyNow,
+                          style: GoogleFonts.montserrat(
+                            fontSize: 11,
+                            color: accentColor,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      )
+                    else
+                      Text(
+                        price,
+                        style: GoogleFonts.montserrat(
+                          fontSize: 13,
+                          color: accentColor,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+              if (selected)
+                Positioned(
+                  top: 2,
+                  right: 2,
+                  child: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: accentColor,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 2.5),
+                      boxShadow: [
+                        BoxShadow(
+                          color: accentColor.withValues(alpha: 0.6),
+                          blurRadius: 12,
+                          offset: const Offset(0, 2),
+                        ),
+                        BoxShadow(
+                          color: AppColors.darkBlack.withValues(alpha: 0.2),
+                          blurRadius: 6,
+                          offset: const Offset(0, 1),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.check_rounded,
+                      color: Colors.white,
+                      size: 28,
+                    ),
                   ),
                 ),
             ],
           ),
         ),
       ),
+    );
+  }
+}
+
+/// أيقونة فلتر المحادثات: قمع أبيض على دائرة داكنة — تفتح ورقة خيارات (الأحدث، الأقدم، من أرسل هدايا، غير مقروءة).
+class _ChatFilterButton extends StatelessWidget {
+  const _ChatFilterButton({
+    required this.currentFilter,
+    required this.l10n,
+    required this.onFilterSelected,
+  });
+
+  final ChatFilterType currentFilter;
+  final AppLocalizations l10n;
+  final void Function(ChatFilterType type) onFilterSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      onPressed: () {
+        showModalBottomSheet<void>(
+          context: context,
+          backgroundColor: Colors.white,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+          ),
+          builder: (context) => SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: 12),
+                Text(
+                  l10n.chatFilterTitle,
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    color: AppColors.darkBlack.withValues(alpha: 0.8),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                _FilterOptionTile(
+                  label: l10n.chatFilterNewest,
+                  selected: currentFilter == ChatFilterType.newest,
+                  onTap: () {
+                    onFilterSelected(ChatFilterType.newest);
+                    Navigator.pop(context);
+                  },
+                ),
+                _FilterOptionTile(
+                  label: l10n.chatFilterOldest,
+                  selected: currentFilter == ChatFilterType.oldest,
+                  onTap: () {
+                    onFilterSelected(ChatFilterType.oldest);
+                    Navigator.pop(context);
+                  },
+                ),
+                _FilterOptionTile(
+                  label: l10n.chatFilterGiftsOnly,
+                  selected: currentFilter == ChatFilterType.giftsOnly,
+                  onTap: () {
+                    onFilterSelected(ChatFilterType.giftsOnly);
+                    Navigator.pop(context);
+                  },
+                ),
+                _FilterOptionTile(
+                  label: l10n.chatFilterUnreadOnly,
+                  selected: currentFilter == ChatFilterType.unreadOnly,
+                  onTap: () {
+                    onFilterSelected(ChatFilterType.unreadOnly);
+                    Navigator.pop(context);
+                  },
+                ),
+                const SizedBox(height: 16),
+              ],
+            ),
+          ),
+        );
+      },
+      icon: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: const BoxDecoration(
+          color: Color(0xFF2A2A2A),
+          shape: BoxShape.circle,
+        ),
+        child: const Icon(
+          Icons.filter_list_rounded,
+          color: Colors.white,
+          size: 22,
+        ),
+      ),
+    );
+  }
+}
+
+class _FilterOptionTile extends StatelessWidget {
+  const _FilterOptionTile({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      title: Text(
+        label,
+        style: TextStyle(
+          fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+          color: selected ? AppColors.hingePurple : AppColors.darkBlack,
+        ),
+      ),
+      onTap: onTap,
     );
   }
 }
@@ -1080,10 +1468,7 @@ class _RosesBalancePillState extends State<_RosesBalancePill>
       child: AnimatedBuilder(
         animation: _pulseAnimation,
         builder: (context, child) {
-          return Transform.scale(
-            scale: _pulseAnimation.value,
-            child: child,
-          );
+          return Transform.scale(scale: _pulseAnimation.value, child: child);
         },
         child: Material(
           color: Colors.transparent,
@@ -1139,7 +1524,11 @@ class _RosesBalancePillState extends State<_RosesBalancePill>
 
 /// يبني محتوى التبويب فقط عند عرضه لأول مرة؛ يبقي المحتوى المُحمّل في الشجرة عند التبديل (حفظ الحالة).
 class _LazyTabSlot extends StatefulWidget {
-  const _LazyTabSlot({required this.isSelected, required this.tabBuilder});
+  const _LazyTabSlot({
+    super.key,
+    required this.isSelected,
+    required this.tabBuilder,
+  });
 
   final bool isSelected;
   final Widget Function() tabBuilder;
@@ -1244,6 +1633,96 @@ class _HeartIconPainter extends CustomPainter {
       oldDelegate.color != color;
 }
 
+/// شارة إشعار أسود لامع ورقم أبيض نابض لجذب الانتباه في الشريط السفلي.
+class _GlossyPulsingBadge extends StatefulWidget {
+  const _GlossyPulsingBadge({required this.count, this.showDot = false});
+
+  final int count;
+  final bool showDot;
+
+  @override
+  State<_GlossyPulsingBadge> createState() => _GlossyPulsingBadgeState();
+}
+
+class _GlossyPulsingBadgeState extends State<_GlossyPulsingBadge>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scale;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat(reverse: true);
+    _scale = Tween<double>(
+      begin: 1.0,
+      end: 1.18,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final count = widget.count;
+    final showNumber = count > 0;
+    return AnimatedBuilder(
+      animation: _scale,
+      builder: (context, child) {
+        return Transform.scale(scale: _scale.value, child: child);
+      },
+      child: Container(
+        padding: showNumber
+            ? const EdgeInsets.symmetric(horizontal: 5, vertical: 2)
+            : EdgeInsets.zero,
+        constraints: BoxConstraints(
+          minWidth: showNumber ? 20 : 10,
+          minHeight: showNumber ? 20 : 10,
+        ),
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.5),
+              blurRadius: 3,
+              offset: const Offset(0, 1),
+            ),
+            const BoxShadow(
+              color: Color(0x1AFFFFFF),
+              blurRadius: 0,
+              spreadRadius: 0,
+              offset: Offset(-0.5, -0.5),
+            ),
+          ],
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF3D3D3D), Color(0xFF252525), Color(0xFF1A1A1A)],
+            stops: [0.0, 0.5, 1.0],
+          ),
+        ),
+        alignment: Alignment.center,
+        child: showNumber
+            ? Text(
+                count > 99 ? '99+' : '$count',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                ),
+              )
+            : null,
+      ),
+    );
+  }
+}
+
 /// شريط تنقل سفلي أنيق بخمس أيقونات: الرئيسية، النجمة، القلب، الدردشة، الملف الشخصي.
 class _SwaplyBottomNav extends StatelessWidget {
   const _SwaplyBottomNav({
@@ -1252,6 +1731,7 @@ class _SwaplyBottomNav extends StatelessWidget {
     required this.l10n,
     this.chatBadgeCount = 0,
     this.likesYouBadgeCount = 0,
+    this.profileBadgeCount = 0,
     this.profileAvatarUrl,
     this.profileDisplayName = '',
   });
@@ -1261,6 +1741,7 @@ class _SwaplyBottomNav extends StatelessWidget {
   final AppLocalizations l10n;
   final int chatBadgeCount;
   final int likesYouBadgeCount;
+  final int profileBadgeCount;
   final String? profileAvatarUrl;
   final String profileDisplayName;
 
@@ -1325,7 +1806,8 @@ class _SwaplyBottomNav extends StatelessWidget {
                 label: l10n.tabProfile,
                 isSelected: currentIndex == 4,
                 onTap: () => onTap(4),
-                showBadge: true,
+                showBadge: profileBadgeCount > 0,
+                badgeCount: profileBadgeCount,
                 profileAvatarUrl: profileAvatarUrl,
                 profileDisplayName: profileDisplayName,
               ),
@@ -1500,37 +1982,9 @@ class _NavItem extends StatelessWidget {
                     Positioned(
                       top: -4,
                       right: -6,
-                      child: Container(
-                        padding: badgeCount > 0
-                            ? const EdgeInsets.symmetric(
-                                horizontal: 5,
-                                vertical: 2,
-                              )
-                            : EdgeInsets.zero,
-                        constraints: BoxConstraints(
-                          minWidth: badgeCount > 0 ? 18 : 8,
-                          minHeight: badgeCount > 0 ? 18 : 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.neonCoral,
-                          shape: badgeCount > 0
-                              ? BoxShape.rectangle
-                              : BoxShape.circle,
-                          borderRadius: badgeCount > 0
-                              ? BorderRadius.circular(9)
-                              : null,
-                        ),
-                        alignment: Alignment.center,
-                        child: badgeCount > 0
-                            ? Text(
-                                badgeCount > 99 ? '99+' : '$badgeCount',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              )
-                            : null,
+                      child: _GlossyPulsingBadge(
+                        count: badgeCount,
+                        showDot: badgeCount == 0,
                       ),
                     ),
                 ],
