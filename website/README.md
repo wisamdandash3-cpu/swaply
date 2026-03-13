@@ -31,12 +31,13 @@ Then open `http://localhost:3000` (or 8080).
 
 - **Vercel (و getswaply.de مربوط بمشروع "swaply")**: كي تظهر التعديلات **والمحتوى من Supabase** على www.getswaply.de:
   1. مشروع **swaply** → **Settings** → **General** → **Root Directory** = `website` (ثم Save)
-  2. **Settings** → **Environment Variables** أضف:
+  2. تأكد أن الملف **`website/config.supabase.production.js`** مرفوع في المستودع (يحتوي رابط ومفتاح Supabase للموقع الحي). إن لم يكن مرفوعاً: `git add website/config.supabase.production.js && git commit -m "Website: add production Supabase config" && git push`.
+  3. **Settings** → **Environment Variables** أضف:
      - `SUPABASE_URL` = `https://tjlbzzmudskkwmdtarfn.supabase.co` (أو Project URL من Supabase → Settings → API)
      - `SUPABASE_ANON_KEY` = مفتاح **anon public** من Supabase → Settings → API
-  3. **Build Command** يبقى كما في المشروع: يشغّل `node scripts/write-config.js` فينشئ `config.supabase.js` من المتغيرات أعلاه، فيقرأ الموقع الحي المحتوى من Supabase.
-  4. **Deployments** → **Redeploy** (أو `git push`) بعد إضافة المتغيرات.
-  5. إذا فشل البناء أو تم عمل Rollback: من **Deployments** اضغط على النشر الفاشل → **Building** (أو **View Function Logs**) واقرأ رسالة الخطأ. تأكد أن **Root Directory** = `website` (Settings → General) وأن التعديلات الأخيرة (مجلد `scripts/` و`vercel.json` و`package.json` مع سكربت `build`) مرفوعة إلى المستودع.
+  4. **Build Command** يبقى كما في المشروع: يشغّل `node scripts/write-config.js` فينشئ `config.supabase.js` من المتغيرات أعلاه، فيقرأ الموقع الحي المحتوى من Supabase.
+  5. **Deployments** → **Redeploy** (أو `git push`) بعد إضافة المتغيرات.
+  6. إذا فشل البناء أو تم عمل Rollback: من **Deployments** اضغط على النشر الفاشل → **Building** (أو **View Function Logs**) واقرأ رسالة الخطأ. تأكد أن **Root Directory** = `website` (Settings → General) وأن التعديلات الأخيرة (مجلد `scripts/` و`vercel.json` و`package.json` مع سكربت `build`) مرفوعة إلى المستودع.
 - **Netlify**: Publish directory = `website`، وضَع نفس المتغيرين في Environment Variables ثم Build command: `npm run build` أو `node scripts/write-config.js`.
 
 ### After app store links are ready
