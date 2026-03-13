@@ -29,8 +29,13 @@ Then open `http://localhost:3000` (or 8080).
 
 ### Vercel / Netlify
 
-- **Vercel**: Link the repo, set **Root Directory** to `website`, leave **Build Command** empty, **Output Directory** = `.` (or leave default).
-- **Netlify**: Same idea — publish directory = `website`, no build step.
+- **Vercel (موصى به)**: انشر من داخل مجلد الموقع حتى تُنشر الملفات الصحيحة:
+  ```bash
+  cd ~/swaply/website
+  vercel --prod
+  ```
+  إذا ربطت المشروع بـ GitHub، يمكن بدلاً من ذلك ضبط **Root Directory** على `website` في إعدادات المشروع على Vercel.
+- **Netlify**: Publish directory = `website`, no build step.
 
 ### After app store links are ready
 
