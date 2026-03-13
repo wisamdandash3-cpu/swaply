@@ -1,3 +1,2 @@
-Place your hero image here as hero.jpg
-It will be used as the full-screen background behind the signup card (same position as on Dating.com).
-You can replace it later with your final image.
+hero.jpg = rachelscottyoga-woman-2937182_1920 (خلفية الهيرو، نفس تخطيط Dating.com).
+Replace hero.jpg to change the hero background.
