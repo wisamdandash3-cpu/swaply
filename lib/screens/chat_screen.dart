@@ -2420,7 +2420,8 @@ class _ConversationScreenState extends State<ConversationScreen> {
                             onRoseGiftTap:
                                 (!isMe &&
                                     (message.photoUrl == 'rose_gift' ||
-                                        message.photoUrl == 'ring_gift'))
+                                        message.photoUrl == 'ring_gift' ||
+                                        message.photoUrl == 'coffee_gift'))
                                 ? _showGiftSheet
                                 : null,
                             reactionEmoji: _reactions[message.id],
@@ -3016,7 +3017,9 @@ class _MessageBubble extends StatelessWidget {
                 )
               : _avatar(partnerName, partnerAvatarUrl));
     final hideAvatarForGift = !isMe &&
-        (message.photoUrl == 'rose_gift' || message.photoUrl == 'ring_gift');
+        (message.photoUrl == 'rose_gift' ||
+            message.photoUrl == 'ring_gift' ||
+            message.photoUrl == 'coffee_gift');
     final avatarWidget = _wrapIfPartner(isMe, avatar);
     final nameWidget = isGiftFromPartner
         ? Row(
@@ -3102,7 +3105,8 @@ class _MessageBubble extends StatelessWidget {
                               child: Container(
                                 padding:
                                     (message.photoUrl == 'rose_gift' ||
-                                            message.photoUrl == 'ring_gift')
+                                            message.photoUrl == 'ring_gift' ||
+                                            message.photoUrl == 'coffee_gift')
                                     ? EdgeInsets.zero
                                     : const EdgeInsets.symmetric(
                                         horizontal: 16,
@@ -3111,7 +3115,8 @@ class _MessageBubble extends StatelessWidget {
                                 decoration: BoxDecoration(
                                   color:
                                       (message.photoUrl == 'rose_gift' ||
-                                              message.photoUrl == 'ring_gift')
+                                              message.photoUrl == 'ring_gift' ||
+                                              message.photoUrl == 'coffee_gift')
                                       ? Colors.transparent
                                       : _isGiftMessage(message)
                                       ? (isMe
@@ -3128,7 +3133,8 @@ class _MessageBubble extends StatelessWidget {
                                             : const Color(0xFFE5F5F5)),
                                   border:
                                       (message.photoUrl == 'rose_gift' ||
-                                              message.photoUrl == 'ring_gift')
+                                              message.photoUrl == 'ring_gift' ||
+                                              message.photoUrl == 'coffee_gift')
                                       ? null
                                       : _isGiftMessage(message)
                                       ? Border.all(
@@ -3151,18 +3157,18 @@ class _MessageBubble extends StatelessWidget {
                                     bottomRight: Radius.circular(isMe ? 4 : 20),
                                   ),
                                   boxShadow:
-                                      (!isMe &&
-                                              (message.photoUrl == 'rose_gift' ||
-                                                  message.photoUrl ==
-                                                      'ring_gift'))
+                                      (message.photoUrl == 'rose_gift' ||
+                                              message.photoUrl == 'ring_gift' ||
+                                              message.photoUrl == 'coffee_gift')
                                       ? null
                                       : [
                                           if (_isGiftMessage(message) &&
-                                              (isMe ||
-                                                  message.photoUrl !=
+                                              message.photoUrl !=
                                                       'rose_gift' &&
-                                                      message.photoUrl !=
-                                                          'ring_gift'))
+                                              message.photoUrl !=
+                                                      'ring_gift' &&
+                                              message.photoUrl !=
+                                                      'coffee_gift')
                                             BoxShadow(
                                               color: AppColors.rosePink
                                                   .withValues(alpha: 0.25),
@@ -3483,17 +3489,20 @@ class _MessageBubble extends StatelessWidget {
                                               ),
                                             )
                                           : message.photoUrl == 'coffee_gift'
-                                          ? FallingPetalsInBox(
-                                              borderRadius:
-                                                  BorderRadius.circular(16),
-                                              child: SizedBox(
-                                                width: 200,
-                                                height: 200,
-                                                child: Center(
-                                                  child: CoffeeIconWidget(
-                                                    size: 140,
-                                                    color: null,
-                                                    withGlow: true,
+                                          ? GestureDetector(
+                                              onTap: onRoseGiftTap,
+                                              child: FallingPetalsInBox(
+                                                borderRadius:
+                                                    BorderRadius.circular(24),
+                                                child: SizedBox(
+                                                  width: 520,
+                                                  height: 520,
+                                                  child: Center(
+                                                    child: CoffeeIconWidget(
+                                                      size: 400,
+                                                      color: null,
+                                                      withGlow: false,
+                                                    ),
                                                   ),
                                                 ),
                                               ),
@@ -3875,10 +3884,10 @@ class _ChatInputBarState extends State<_ChatInputBar> {
           12 + MediaQuery.of(context).padding.bottom,
         ),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.darkBlack,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.06),
+              color: Colors.black.withValues(alpha: 0.3),
               blurRadius: 12,
               offset: const Offset(0, -4),
             ),
@@ -3892,11 +3901,11 @@ class _ChatInputBarState extends State<_ChatInputBar> {
                 onPressed: widget.onVoiceCancel,
                 icon: Icon(
                   Icons.delete_outline_rounded,
-                  color: Colors.grey.shade700,
+                  color: Colors.grey.shade300,
                   size: 24,
                 ),
                 style: IconButton.styleFrom(
-                  backgroundColor: Colors.grey.shade100,
+                  backgroundColor: Colors.white.withValues(alpha: 0.12),
                   shape: const CircleBorder(),
                 ),
               ),
@@ -3909,9 +3918,9 @@ class _ChatInputBarState extends State<_ChatInputBar> {
                   vertical: 10,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Colors.white.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: Colors.grey.shade300),
+                  border: Border.all(color: Colors.white24),
                 ),
                 child: Row(
                   children: [
@@ -3928,7 +3937,7 @@ class _ChatInputBarState extends State<_ChatInputBar> {
                       _formatDuration(widget.recordingDurationSeconds),
                       style: TextStyle(
                         fontSize: 15,
-                        color: Colors.grey.shade800,
+                        color: Colors.grey.shade200,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -3943,7 +3952,7 @@ class _ChatInputBarState extends State<_ChatInputBar> {
                     ),
                     if (widget.onVoicePauseResume != null)
                       Material(
-                        color: Colors.grey.shade100,
+                        color: Colors.white.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(20),
                         child: InkWell(
                           onTap: widget.onVoicePauseResume,
@@ -3954,7 +3963,7 @@ class _ChatInputBarState extends State<_ChatInputBar> {
                               widget.recordingPaused
                                   ? Icons.play_arrow_rounded
                                   : Icons.pause_rounded,
-                              color: Colors.grey.shade800,
+                              color: Colors.grey.shade200,
                               size: 24,
                             ),
                           ),
@@ -3997,48 +4006,53 @@ class _ChatInputBarState extends State<_ChatInputBar> {
       );
     }
 
-    const barBg = Colors.white;
-    final iconColor = AppColors.darkBlack.withValues(alpha: 0.75);
+    const barBg = AppColors.darkBlack;
+    final iconColor = Colors.grey.shade300;
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
 
     return Container(
-      padding: EdgeInsets.fromLTRB(
-        8,
-        6,
-        8,
-        6 + MediaQuery.of(context).padding.bottom,
-      ),
-      decoration: const BoxDecoration(
+      margin: EdgeInsets.fromLTRB(10, 6, 10, 6 + bottomPadding),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
         color: barBg,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.circular(28),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.3),
+            blurRadius: 12,
+            offset: const Offset(0, -2),
+          ),
+        ],
       ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Material(
             color: Colors.transparent,
             child: InkWell(
               onTap: widget.onGiftTap,
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: BorderRadius.circular(20),
               child: Container(
-                width: 40,
-                height: 40,
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: barBg,
-                ),
+                width: 44,
+                height: 44,
+                alignment: Alignment.center,
                 child: Text(
                   '🎁',
-                  style: TextStyle(fontSize: 22, height: 1.2),
+                  style: TextStyle(fontSize: 24, height: 1.2),
                 ),
               ),
             ),
           ),
-          const SizedBox(width: 6),
+          const SizedBox(width: 10),
           Expanded(
             child: Container(
               decoration: BoxDecoration(
-                color: AppColors.darkBlack.withValues(alpha: 0.06),
-                borderRadius: BorderRadius.circular(18),
+                color: Colors.white.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(22),
+                border: Border.all(
+                  color: Colors.white24,
+                  width: 1,
+                ),
               ),
               child: TextField(
                 controller: widget.controller,
@@ -4046,33 +4060,34 @@ class _ChatInputBarState extends State<_ChatInputBar> {
                 minLines: 1,
                 maxLength: 10000,
                 style: TextStyle(
-                  color: AppColors.darkBlack.withValues(alpha: 0.85),
-                  fontSize: 14,
+                  color: Colors.grey.shade200,
+                  fontSize: 15,
                 ),
                 decoration: InputDecoration(
                   hintText: AppLocalizations.of(context).messagePlaceholder,
                   hintStyle: TextStyle(
-                    color: AppColors.darkBlack.withValues(alpha: 0.4),
-                    fontSize: 14,
+                    color: Colors.grey.shade400,
+                    fontSize: 15,
                   ),
+                  filled: false,
                   border: InputBorder.none,
                   counterText: '',
                   contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
+                    horizontal: 16,
+                    vertical: 12,
                   ),
                   suffixIcon: widget.onVoiceTap != null
                       ? Padding(
-                          padding: const EdgeInsets.only(right: 2),
+                          padding: const EdgeInsets.only(right: 4),
                           child: IconButton(
                             onPressed: widget.onVoiceTap,
                             icon: Icon(
                               Icons.mic_rounded,
                               color: iconColor,
-                              size: 20,
+                              size: 22,
                             ),
                             style: IconButton.styleFrom(
-                              minimumSize: const Size(32, 32),
+                              minimumSize: const Size(36, 36),
                               padding: EdgeInsets.zero,
                             ),
                           ),
@@ -4088,19 +4103,21 @@ class _ChatInputBarState extends State<_ChatInputBar> {
             ),
           ),
           if (hasText) ...[
-            const SizedBox(width: 4),
+            const SizedBox(width: 8),
             Material(
               color: Colors.transparent,
               child: InkWell(
                 onTap: widget.onSend,
-                borderRadius: BorderRadius.circular(18),
+                borderRadius: BorderRadius.circular(20),
                 child: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: barBg,
-                    borderRadius: BorderRadius.circular(18),
+                  width: 44,
+                  height: 44,
+                  alignment: Alignment.center,
+                  child: Icon(
+                    Icons.send_rounded,
+                    color: iconColor,
+                    size: 22,
                   ),
-                  child: Icon(Icons.send_rounded, color: iconColor, size: 20),
                 ),
               ),
             ),
@@ -4369,13 +4386,13 @@ class _GiftSheetContentState extends State<_GiftSheetContent> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     _BalanceChip(
-                      imagePath: 'assets/coffee_icon.png',
+                      imagePath: 'assets/454.png',
                       color: const Color(0xFF8B7355),
                       count: _balance!.coffee,
                     ),
                     const SizedBox(width: 10),
                     _BalanceChip(
-                      imagePath: 'assets/434.png',
+                      imagePath: 'assets/4.png',
                       color: const Color(0xFFC9A227),
                       count: _balance!.rings,
                     ),
@@ -4410,7 +4427,7 @@ class _GiftSheetContentState extends State<_GiftSheetContent> {
                       : null,
                 ),
                 _GiftOption(
-                  imagePath: 'assets/434.png',
+                  imagePath: 'assets/4.png',
                   label: l10n.giftRing,
                   price:
                       '€${GiftPricing.formatCents(GiftPricing.ringPriceCents)}',
@@ -4427,7 +4444,7 @@ class _GiftSheetContentState extends State<_GiftSheetContent> {
                       : null,
                 ),
                 _GiftOption(
-                  imagePath: 'assets/coffee_icon.png',
+                  imagePath: 'assets/454.png',
                   label: l10n.giftCoffee,
                   price:
                       '€${GiftPricing.formatCents(GiftPricing.coffeePriceCents)}',
