@@ -4,16 +4,20 @@ import 'package:google_fonts/google_fonts.dart';
 import '../app_colors.dart';
 import '../constants/gift_pricing.dart';
 import '../generated/l10n/app_localizations.dart';
+import '../screens/legal_screen.dart';
 import '../services/subscription_service.dart';
 import '../services/wallet_service.dart';
 import 'cinematic_rose_widget.dart';
 import 'coffee_icon_widget.dart';
 import 'ring_icon_widget.dart';
 
+/// لون زر السعر الأزرق (مثل صورة Add credits).
+const Color _priceButtonBlue = Color(0xFF4A90E2);
+
 /// نوع الهدية لورقة الشراء.
 enum _GiftTab { roses, rings, coffee }
 
-/// ورقة شراء الهدايا — ورود، خواتم، قهوة. مع شراء سريع بضغطة واحدة.
+/// ورقة شراء الهدايا — تصميم داكن: أيقونة مركزية كبيرة، صفوف مع أيقونات واضحة، أزرار سعر زرقاء.
 Future<void> showBuyRosesSheet(BuildContext context, {String? initialGiftType}) async {
   _GiftTab initialTab = _GiftTab.roses;
   if (initialGiftType == 'ring_gift') {
@@ -124,188 +128,406 @@ class _BuyGiftsSheetContentState extends State<_BuyGiftsSheetContent> {
     }
   }
 
-  int? _bestValueIndex(List<({int count, int priceCents})> bundles, int singlePrice) {
-    if (bundles.length < 2) return null;
-    double best = 0;
-    int idx = 0;
-    for (var i = 0; i < bundles.length; i++) {
-      final b = bundles[i];
-      if (b.count > 1) {
-        final perUnit = b.priceCents / b.count;
-        final save = (singlePrice - perUnit) / singlePrice;
-        if (save > best) {
-          best = save;
-          idx = i;
-        }
-      }
-    }
-    return best > 0 ? idx : null;
+  void _onRestorePurchases() {
+    // يمكن ربطه لاحقاً بخدمة استعادة المشتريات
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return Container(
-      padding: EdgeInsets.only(
-        left: 20,
-        right: 20,
-        top: 24,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 32,
-      ),
+      height: MediaQuery.of(context).size.height * 0.92,
       decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-        boxShadow: [
-          BoxShadow(
-            color: Color(0x1A000000),
-            blurRadius: 20,
-            offset: Offset(0, -4),
-          ),
-        ],
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color(0xFF2D2438),
+            Color(0xFF1a1a2e),
+          ],
+        ),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Center(
-            child: Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: AppColors.darkBlack.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(2),
+      child: SafeArea(
+        top: false,
+        child: Column(
+          children: [
+            // مقبض + زر إغلاق
+            Padding(
+              padding: const EdgeInsets.only(top: 12, right: 8, left: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const SizedBox(width: 48),
+                  Container(
+                    width: 36,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.3),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    icon: Icon(Icons.close, color: Colors.white, size: 26),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                ],
               ),
             ),
-          ),
-          const SizedBox(height: 20),
-          if (!_loading && _balance != null)
+            // أيقونة مركزية كبيرة للهدية (واضحة)
             Padding(
-              padding: const EdgeInsets.only(bottom: 16),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: BoxDecoration(
-                  color: AppColors.hingePurple.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                    color: AppColors.hingePurple.withValues(alpha: 0.2),
-                    width: 1,
+              padding: const EdgeInsets.only(top: 8),
+              child: _CentralGiftIcon(tab: _selectedTab),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              l10n.addCreditsToAccount,
+              style: GoogleFonts.montserrat(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            // عرض الرصيد في مربعات احترافية
+            if (!_loading && _balance != null)
+              Padding(
+                padding: const EdgeInsets.only(left: 20, right: 20, bottom: 16),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _BalanceBox(
+                        icon: _RealGiftIcon(
+                          asset: 'assets/34.png',
+                          size: 22,
+                          fallback: Icon(Icons.local_florist_rounded, size: 22, color: AppColors.rosePink),
+                        ),
+                        count: _balance!.roses,
+                        label: l10n.giftRose,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _BalanceBox(
+                        icon: _RealGiftIcon(
+                          asset: 'assets/4.png',
+                          size: 20,
+                          fallback: RingIconWidget(size: 20, color: null, withGlow: false),
+                        ),
+                        count: _balance!.rings,
+                        label: l10n.giftRing,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _BalanceBox(
+                        icon: _RealGiftIcon(
+                          asset: 'assets/454.png',
+                          size: 20,
+                          fallback: CoffeeIconWidget(size: 20, color: null, withGlow: false),
+                        ),
+                        count: _balance!.coffee,
+                        label: l10n.giftCoffee,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            // تبويبات الهدايا مع أيقونات واضحة
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Row(
+                children: [
+                  _TabChip(
+                    label: l10n.giftRose,
+                    selected: _selectedTab == _GiftTab.roses,
+                    onTap: () => setState(() => _selectedTab = _GiftTab.roses),
+                    iconWidget: _RealGiftIcon(
+                      asset: 'assets/34.png',
+                      size: 28,
+                      fallback: Icon(Icons.local_florist_rounded, size: 28, color: AppColors.rosePink),
+                    ),
+                    color: AppColors.rosePink,
                   ),
+                  const SizedBox(width: 8),
+                  _TabChip(
+                    label: l10n.giftRing,
+                    selected: _selectedTab == _GiftTab.rings,
+                    onTap: () => setState(() => _selectedTab = _GiftTab.rings),
+                    iconWidget: _RealGiftIcon(
+                      asset: 'assets/4.png',
+                      size: 24,
+                      fallback: RingIconWidget(size: 24, color: null, withGlow: false),
+                    ),
+                    color: AppColors.ringGold,
+                  ),
+                  const SizedBox(width: 8),
+                  _TabChip(
+                    label: l10n.giftCoffee,
+                    selected: _selectedTab == _GiftTab.coffee,
+                    onTap: () => setState(() => _selectedTab = _GiftTab.coffee),
+                    iconWidget: _RealGiftIcon(
+                      asset: 'assets/454.png',
+                      size: 24,
+                      fallback: CoffeeIconWidget(size: 24, color: null, withGlow: false),
+                    ),
+                    color: AppColors.coffeeBrown,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            if (_loading)
+              const Expanded(
+                child: Center(
+                  child: CircularProgressIndicator(color: Colors.white),
+                ),
+              )
+            else
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  children: [
+                    if (_selectedTab == _GiftTab.roses)
+                      ...GiftPricing.roseBundles.map(
+                        (b) => _DarkGiftRow(
+                          icon: _RealGiftIcon(
+                            asset: 'assets/34.png',
+                            size: 44,
+                            fallback: CinematicRoseWidget(size: 44, color: null, withGlow: false),
+                          ),
+                          title: '${b.count} ${l10n.giftRose}',
+                          subtitle: b.count > 1 ? l10n.perUnit(GiftPricing.formatCents(b.priceCents ~/ b.count)) : null,
+                          priceCents: b.priceCents,
+                          onTap: () => _onRosesTap(b.count),
+                        ),
+                      ),
+                    if (_selectedTab == _GiftTab.rings)
+                      ...GiftPricing.ringBundles.map(
+                        (b) => _DarkGiftRow(
+                          icon: _RealGiftIcon(
+                            asset: 'assets/4.png',
+                            size: 40,
+                            fallback: RingIconWidget(size: 40, color: null, withGlow: false),
+                          ),
+                          title: '${b.count} ${l10n.giftRing}',
+                          subtitle: b.count > 1 ? l10n.perUnit(GiftPricing.formatCents(b.priceCents ~/ b.count)) : null,
+                          priceCents: b.priceCents,
+                          onTap: () => _onRingsTap(b.count),
+                        ),
+                      ),
+                    if (_selectedTab == _GiftTab.coffee)
+                      ...GiftPricing.coffeeBundles.map(
+                        (b) => _DarkGiftRow(
+                          icon: _RealGiftIcon(
+                            asset: 'assets/454.png',
+                            size: 40,
+                            fallback: CoffeeIconWidget(size: 40, color: null, withGlow: false),
+                          ),
+                          title: '${b.count} ${l10n.giftCoffee}',
+                          subtitle: b.count > 1 ? l10n.perUnit(GiftPricing.formatCents(b.priceCents ~/ b.count)) : null,
+                          priceCents: b.priceCents,
+                          onTap: () => _onCoffeeTap(b.count),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            // رسالة الدفع قريباً
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
                   children: [
-                    Icon(
-                      Icons.account_balance_wallet_rounded,
-                      size: 22,
-                      color: AppColors.hingePurple,
-                    ),
+                    Icon(Icons.info_outline_rounded, size: 18, color: Colors.white.withValues(alpha: 0.7)),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        '${l10n.yourBalance}: ${l10n.rosesBalance(_balance!.roses)}  ·  ${_balance!.rings} ${l10n.giftRing}  ·  ${_balance!.coffee} ${l10n.giftCoffee}',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.darkBlack,
-                        ),
+                        l10n.paymentComingSoonGifts,
+                        style: TextStyle(fontSize: 12, color: Colors.white.withValues(alpha: 0.8)),
                       ),
                     ),
                   ],
                 ),
               ),
             ),
-          // تبويبات سريعة
-          Row(
-            children: [
-              _TabChip(
-                label: l10n.giftRose,
-                icon: Icons.local_florist_rounded,
-                color: AppColors.rosePink,
-                selected: _selectedTab == _GiftTab.roses,
-                onTap: () => setState(() => _selectedTab = _GiftTab.roses),
-                iconWidget: _RealGiftIcon(asset: 'assets/34.png', size: 26, fallback: Icon(Icons.local_florist_rounded, size: 26, color: AppColors.rosePink)),
-              ),
-              const SizedBox(width: 8),
-              _TabChip(
-                label: l10n.giftRing,
-                icon: Icons.diamond_rounded,
-                color: AppColors.ringGold,
-                selected: _selectedTab == _GiftTab.rings,
-                onTap: () => setState(() => _selectedTab = _GiftTab.rings),
-                iconWidget: _RealGiftIcon(asset: 'assets/434.png', size: 20, fallback: RingIconWidget(size: 20, color: null, withGlow: false)),
-              ),
-              const SizedBox(width: 8),
-              _TabChip(
-                label: l10n.giftCoffee,
-                icon: Icons.coffee_rounded,
-                color: AppColors.coffeeBrown,
-                selected: _selectedTab == _GiftTab.coffee,
-                onTap: () => setState(() => _selectedTab = _GiftTab.coffee),
-                iconWidget: _RealGiftIcon(asset: 'assets/coffee_icon.png', size: 20, fallback: CoffeeIconWidget(size: 20, color: null, withGlow: false)),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          if (_loading)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 24),
-              child: Center(
-                child: CircularProgressIndicator(color: AppColors.hingePurple),
-              ),
-            )
-          else ...[
-            if (_selectedTab == _GiftTab.roses)
-              _RosesContent(
-                balance: _balance!.roses,
-                bestIdx: _bestValueIndex(GiftPricing.roseBundles, GiftPricing.rosePriceCents),
-                onTap: _onRosesTap,
-              ),
-            if (_selectedTab == _GiftTab.rings)
-              _RingsContent(
-                balance: _balance!.rings,
-                bestIdx: _bestValueIndex(GiftPricing.ringBundles, GiftPricing.ringPriceCents),
-                onTap: _onRingsTap,
-              ),
-            if (_selectedTab == _GiftTab.coffee)
-              _CoffeeContent(
-                balance: _balance!.coffee,
-                bestIdx: _bestValueIndex(GiftPricing.coffeeBundles, GiftPricing.coffeePriceCents),
-                onTap: _onCoffeeTap,
-              ),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              decoration: BoxDecoration(
-                color: AppColors.warmSand.withValues(alpha: 0.3),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
+            // تذييل: استعادة المشتريات، الشروط، الخصوصية (بدون overflow)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 24, left: 12, right: 12),
+              child: Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 4,
+                runSpacing: 4,
                 children: [
-                  Icon(
-                    Icons.info_outline_rounded,
-                    size: 18,
-                    color: AppColors.darkBlack.withValues(alpha: 0.6),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
+                  TextButton(
+                    onPressed: _onRestorePurchases,
+                    style: TextButton.styleFrom(
+                      minimumSize: Size.zero,
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
                     child: Text(
-                      l10n.paymentComingSoonGifts,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: AppColors.darkBlack.withValues(alpha: 0.6),
-                      ),
+                      l10n.restorePurchases,
+                      style: TextStyle(fontSize: 12, color: Colors.white.withValues(alpha: 0.7)),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  Text(
+                    '·',
+                    style: TextStyle(fontSize: 12, color: Colors.white.withValues(alpha: 0.5)),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      final locale = Localizations.localeOf(context).languageCode;
+                      Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => LegalScreen(type: LegalType.terms, languageCode: locale),
+                        ),
+                      );
+                    },
+                    style: TextButton.styleFrom(
+                      minimumSize: Size.zero,
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    child: Text(
+                      l10n.termsOfUse,
+                      style: TextStyle(fontSize: 12, color: Colors.white.withValues(alpha: 0.7)),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  Text(
+                    '·',
+                    style: TextStyle(fontSize: 12, color: Colors.white.withValues(alpha: 0.5)),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      final locale = Localizations.localeOf(context).languageCode;
+                      Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => LegalScreen(type: LegalType.privacy, languageCode: locale),
+                        ),
+                      );
+                    },
+                    style: TextButton.styleFrom(
+                      minimumSize: Size.zero,
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    child: Text(
+                      l10n.privacyPolicy,
+                      style: TextStyle(fontSize: 12, color: Colors.white.withValues(alpha: 0.7)),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// مربع عرض رصيد نوع هدية واحد (وردة / خاتم / قهوة).
+class _BalanceBox extends StatelessWidget {
+  const _BalanceBox({
+    required this.icon,
+    required this.count,
+    required this.label,
+  });
+
+  final Widget icon;
+  final int count;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.12),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          icon,
+          const SizedBox(height: 6),
+          Text(
+            '$count',
+            style: GoogleFonts.montserrat(
+              fontWeight: FontWeight.w700,
+              fontSize: 16,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 11,
+              color: Colors.white.withValues(alpha: 0.75),
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+          ),
         ],
       ),
     );
   }
 }
 
-/// أيقونة هدية من أصل صورة (وردة/خاتم/قهوة الحقيقية) مع fallback.
+/// أيقونة الهدية الكبيرة في المنتصف (واضحة).
+class _CentralGiftIcon extends StatelessWidget {
+  const _CentralGiftIcon({required this.tab});
+
+  final _GiftTab tab;
+
+  @override
+  Widget build(BuildContext context) {
+    switch (tab) {
+      case _GiftTab.roses:
+        return _RealGiftIcon(
+          asset: 'assets/34.png',
+          size: 88,
+          fallback: CinematicRoseWidget(size: 88, color: null, withGlow: false),
+        );
+      case _GiftTab.rings:
+        return _RealGiftIcon(
+          asset: 'assets/4.png',
+          size: 72,
+          fallback: RingIconWidget(size: 72, color: null, withGlow: false),
+        );
+      case _GiftTab.coffee:
+        return _RealGiftIcon(
+          asset: 'assets/454.png',
+          size: 72,
+          fallback: CoffeeIconWidget(size: 72, color: null, withGlow: false),
+        );
+    }
+  }
+}
+
+/// أيقونة هدية من أصل صورة مع fallback — بحجم واضح.
 class _RealGiftIcon extends StatelessWidget {
   const _RealGiftIcon({
     required this.asset,
@@ -334,25 +556,23 @@ class _RealGiftIcon extends StatelessWidget {
 class _TabChip extends StatelessWidget {
   const _TabChip({
     required this.label,
-    required this.icon,
-    required this.color,
     required this.selected,
     required this.onTap,
-    this.iconWidget,
+    required this.iconWidget,
+    required this.color,
   });
 
   final String label;
-  final IconData icon;
-  final Color color;
   final bool selected;
   final VoidCallback onTap;
-  final Widget? iconWidget;
+  final Widget iconWidget;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
     return Expanded(
       child: Material(
-        color: selected ? color.withValues(alpha: 0.2) : color.withValues(alpha: 0.08),
+        color: selected ? color.withValues(alpha: 0.25) : color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(12),
         child: InkWell(
           onTap: onTap,
@@ -362,14 +582,17 @@ class _TabChip extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                iconWidget ?? Icon(icon, size: 20, color: selected ? color : color.withValues(alpha: 0.7)),
+                iconWidget,
                 const SizedBox(width: 6),
-                Text(
-                  label,
-                  style: GoogleFonts.montserrat(
-                    fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
-                    fontSize: 13,
-                    color: selected ? color : AppColors.darkBlack.withValues(alpha: 0.7),
+                Flexible(
+                  child: Text(
+                    label,
+                    style: GoogleFonts.montserrat(
+                      fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                      fontSize: 13,
+                      color: selected ? color : Colors.white.withValues(alpha: 0.8),
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],
@@ -381,261 +604,97 @@ class _TabChip extends StatelessWidget {
   }
 }
 
-class _RosesContent extends StatelessWidget {
-  const _RosesContent({
-    required this.balance,
-    required this.bestIdx,
-    required this.onTap,
-  });
-
-  final int balance;
-  final int? bestIdx;
-  final void Function(int count) onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('${l10n.yourBalance}: $balance 🌹', style: TextStyle(fontSize: 14, color: AppColors.darkBlack.withValues(alpha: 0.7))),
-        const SizedBox(height: 16),
-        SizedBox(
-          height: 320,
-          child: SingleChildScrollView(
-            child: Column(
-              children: GiftPricing.roseBundles.asMap().entries.map((e) {
-                final i = e.key;
-                final b = e.value;
-                final isBest = bestIdx == i && b.count > 1;
-                final perUnit = b.count > 1 ? GiftPricing.formatCents(b.priceCents ~/ b.count) : GiftPricing.formatCents(b.priceCents);
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: _BundleCard(
-                    count: b.count,
-                    label: l10n.giftRose,
-                    priceCents: b.priceCents,
-                    perUnit: perUnit,
-                    isBestValue: isBest,
-                    icon: _RealGiftIcon(
-                      asset: 'assets/34.png',
-                      size: 40,
-                      fallback: CinematicRoseWidget(size: 40, color: null, withGlow: false),
-                    ),
-                    accentColor: AppColors.rosePink,
-                    onTap: () => onTap(b.count),
-                  ),
-                );
-              }).toList(),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _RingsContent extends StatelessWidget {
-  const _RingsContent({
-    required this.balance,
-    required this.bestIdx,
-    required this.onTap,
-  });
-
-  final int balance;
-  final int? bestIdx;
-  final void Function(int count) onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('${l10n.yourBalance}: $balance 💎', style: TextStyle(fontSize: 14, color: AppColors.darkBlack.withValues(alpha: 0.7))),
-        const SizedBox(height: 16),
-        SizedBox(
-          height: 320,
-          child: SingleChildScrollView(
-            child: Column(
-              children: GiftPricing.ringBundles.asMap().entries.map((e) {
-                final i = e.key;
-                final b = e.value;
-                final isBest = bestIdx == i && b.count > 1;
-                final perUnit = b.count > 1 ? GiftPricing.formatCents(b.priceCents ~/ b.count) : GiftPricing.formatCents(b.priceCents);
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: _BundleCard(
-                    count: b.count,
-                    label: l10n.giftRing,
-                    priceCents: b.priceCents,
-                    perUnit: perUnit,
-                    isBestValue: isBest,
-                    icon: _RealGiftIcon(
-                      asset: 'assets/434.png',
-                      size: 32,
-                      fallback: RingIconWidget(size: 32, color: null, withGlow: false),
-                    ),
-                    accentColor: AppColors.ringGold,
-                    onTap: () => onTap(b.count),
-                  ),
-                );
-              }).toList(),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _CoffeeContent extends StatelessWidget {
-  const _CoffeeContent({
-    required this.balance,
-    required this.bestIdx,
-    required this.onTap,
-  });
-
-  final int balance;
-  final int? bestIdx;
-  final void Function(int count) onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('${l10n.yourBalance}: $balance ☕', style: TextStyle(fontSize: 14, color: AppColors.darkBlack.withValues(alpha: 0.7))),
-        const SizedBox(height: 16),
-        SizedBox(
-          height: 320,
-          child: SingleChildScrollView(
-            child: Column(
-              children: GiftPricing.coffeeBundles.asMap().entries.map((e) {
-                final i = e.key;
-                final b = e.value;
-                final isBest = bestIdx == i && b.count > 1;
-                final perUnit = b.count > 1 ? GiftPricing.formatCents(b.priceCents ~/ b.count) : GiftPricing.formatCents(b.priceCents);
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: _BundleCard(
-                    count: b.count,
-                    label: l10n.giftCoffee,
-                    priceCents: b.priceCents,
-                    perUnit: perUnit,
-                    isBestValue: isBest,
-                    icon: _RealGiftIcon(
-                      asset: 'assets/coffee_icon.png',
-                      size: 32,
-                      fallback: CoffeeIconWidget(size: 32, color: null, withGlow: false),
-                    ),
-                    accentColor: AppColors.coffeeBrown,
-                    onTap: () => onTap(b.count),
-                  ),
-                );
-              }).toList(),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _BundleCard extends StatelessWidget {
-  const _BundleCard({
-    required this.count,
-    required this.label,
-    required this.priceCents,
-    required this.perUnit,
-    required this.isBestValue,
+/// صف خيار شراء بتصميم داكن: أيقونة واضحة + عنوان + فرعي + زر سعر أزرق.
+class _DarkGiftRow extends StatelessWidget {
+  const _DarkGiftRow({
     required this.icon,
-    required this.accentColor,
+    required this.title,
+    this.subtitle,
+    required this.priceCents,
     required this.onTap,
   });
 
-  final int count;
-  final String label;
-  final int priceCents;
-  final String perUnit;
-  final bool isBestValue;
   final Widget icon;
-  final Color accentColor;
+  final String title;
+  final String? subtitle;
+  final int priceCents;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
     final locale = Localizations.localeOf(context).toLanguageTag();
     final priceStr = GiftPricing.formatCentsForDisplay(priceCents, locale);
-    return Material(
-      color: isBestValue ? accentColor.withValues(alpha: 0.08) : AppColors.warmSand.withValues(alpha: 0.25),
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            border: isBestValue ? Border.all(color: accentColor.withValues(alpha: 0.4), width: 1.5) : null,
-          ),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: accentColor.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(12),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Material(
+        color: Colors.white.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(14),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(14),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            child: Row(
+              children: [
+                // أيقونة الهدية واضحة في خلفية فاتحة
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  alignment: Alignment.center,
+                  child: icon,
                 ),
-                child: icon,
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (isBestValue)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 4),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                          decoration: BoxDecoration(
-                            color: AppColors.forestGreen,
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            l10n.bestValue,
-                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.white),
-                          ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: GoogleFonts.montserrat(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                          color: Colors.white,
                         ),
                       ),
-                    Text(
-                      '$count $label',
-                      style: GoogleFonts.montserrat(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 16,
-                        color: AppColors.darkBlack,
+                      if (subtitle != null) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          subtitle!,
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.white.withValues(alpha: 0.6),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Material(
+                  color: _priceButtonBlue,
+                  borderRadius: BorderRadius.circular(10),
+                  child: InkWell(
+                    onTap: onTap,
+                    borderRadius: BorderRadius.circular(10),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      child: Text(
+                        priceStr,
+                        style: GoogleFonts.montserrat(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 15,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
-                    if (count > 1)
-                      Text(
-                        l10n.perUnit(perUnit),
-                        style: TextStyle(fontSize: 12, color: AppColors.darkBlack.withValues(alpha: 0.6)),
-                      ),
-                  ],
+                  ),
                 ),
-              ),
-              Text(
-                priceStr,
-                style: GoogleFonts.montserrat(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                  color: accentColor,
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
