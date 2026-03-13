@@ -230,8 +230,18 @@ a:hover {
 }
 
 .icon-block-icon {
-  font-size: 2.5rem;
-  margin-bottom: 0.75rem;
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-block-icon svg {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 .icon-block h2 {
