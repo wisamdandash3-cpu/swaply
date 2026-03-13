@@ -317,17 +317,357 @@ a:hover {
   line-height: 1.5;
 }
 
-/* Content sections */
-.content-section {
-  max-width: 800px;
+/* Split sections — نص + بصري (Dating.com) */
+.split-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  max-width: 1100px;
   margin: 0 auto;
+  padding: 3rem 1.5rem;
+  align-items: center;
+}
+
+.split-section.alt { grid-template-columns: 1fr 1fr; }
+.split-section.alt .split-content { order: 2; }
+.split-section.alt .split-visual { order: 1; }
+
+.split-content .section-h2 { text-align: left; margin-bottom: 1rem; }
+.split-content .section-p { text-align: left; }
+
+.section-disclaimer {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin: 1rem 0 0;
+}
+
+/* Meet: كروت بروفايل متداخلة */
+.profile-cards-wrap {
+  position: relative;
+  min-height: 280px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-card {
+  position: absolute;
+  width: 200px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+}
+
+.profile-card img { width: 100%; height: 260px; object-fit: cover; display: block; }
+.profile-card-back { transform: rotate(-6deg); left: 15%; z-index: 0; }
+.profile-card-front { transform: rotate(4deg); right: 15%; z-index: 1; }
+.profile-name { position: absolute; bottom: 8px; left: 8px; background: rgba(0,0,0,0.6); color: #fff; padding: 4px 8px; border-radius: 6px; font-size: 0.85rem; }
+.profile-badge { position: absolute; background: #fff; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; }
+.profile-badge.check { bottom: 40px; left: 8px; color: #4aa8d0; }
+.profile-badge.flame { top: 8px; right: 8px; }
+
+/* Dynamic: فيديو mock */
+.video-mock {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+}
+.video-mock img { width: 100%; height: auto; display: block; }
+.video-mock-pip {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  width: 120px;
+  height: 120px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 2px solid #fff;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+.video-mock-pip img { width: 100%; height: 100%; object-fit: cover; }
+
+/* Explore: شبكة 2x2 */
+.profiles-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+.profile-thumb {
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+  aspect-ratio: 1;
+}
+.profile-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.thumb-check {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  width: 22px;
+  height: 22px;
+  background: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  color: #4aa8d0;
+  font-weight: bold;
+}
+
+/* Dark section: Search for singles */
+.dark-section {
+  background: #2a2a2a;
+  color: #fff;
   padding: 3rem 1.5rem;
   text-align: center;
 }
+.dark-section .section-h2 { color: #fff; margin-bottom: 0.75rem; }
+.dark-section .section-p { color: rgba(255,255,255,0.85); max-width: 640px; margin: 0 auto 2rem; }
+.dark-section .arrow-icon { color: var(--primary); margin-left: 0.25rem; }
+.dark-section .section-disclaimer { color: rgba(255,255,255,0.6); margin-top: 2rem; }
 
-.content-section.alt {
+.category-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+.category-card {
+  display: block;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #333;
+  color: #fff;
+  text-decoration: none;
+}
+.category-card img { width: 100%; height: 180px; object-fit: cover; display: block; }
+.category-card span { display: block; padding: 1rem; font-weight: 500; font-size: 0.95rem; }
+.category-card:hover { opacity: 0.95; }
+
+/* Reviews: شريط + كاروسيل */
+.reviews-section {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 0 3rem;
+  background: var(--bg-alt);
+  text-align: center;
+}
+.reviews-disclaimer-bar {
+  background: #1a1a1a;
+  color: #fff;
+  font-size: 0.75rem;
+  padding: 0.5rem 1rem;
+  margin: 0 0 2rem;
+}
+.reviews-section .section-h2 { margin-bottom: 0.5rem; }
+.reviews-section .section-p { margin-bottom: 1.5rem; }
+
+.reviews-carousel-wrap {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  max-width: 700px;
+  margin: 0 auto 1rem;
+}
+.reviews-carousel {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  transition: transform 0.3s ease;
+}
+.reviews-carousel .review-card {
+  margin: 0;
+  padding: 1.5rem;
+  background: var(--bg);
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  text-align: left;
+  flex: 0 0 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+.review-card p { font-size: 0.95rem; margin: 0 0 1rem; line-height: 1.6; }
+.review-card footer { font-size: 0.85rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.5rem; }
+.review-avatar { width: 32px; height: 32px; border-radius: 50%; background: #e0e0e0; display: inline-block; flex-shrink: 0; }
+.review-card cite { display: block; margin-top: 0.25rem; font-style: normal; }
+
+.carousel-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  font-size: 1.5rem;
+  cursor: pointer;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.carousel-btn:hover { background: var(--bg-alt); }
+.carousel-dots, .success-dots {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+.carousel-dots .dot, .success-dots .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--border);
+  cursor: pointer;
+}
+.carousel-dots .dot.active, .success-dots .dot.active { background: var(--primary); }
+
+/* Featured + CTA banner */
+.featured-section {
+  padding: 2rem 1.5rem 0;
+  text-align: center;
+}
+.featured-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin: 0 0 1rem;
+}
+.media-logos {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 2rem;
+}
+.cta-banner {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  max-width: 1000px;
+  margin: 0 auto;
+  min-height: 400px;
+}
+.cta-banner img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  min-height: 400px;
+}
+.cta-banner-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 50%);
+  color: #fff;
+  padding: 2rem;
+  text-align: center;
+}
+.cta-banner-text .section-h2 { color: #fff; margin-bottom: 0.5rem; }
+.cta-banner-text p { color: rgba(255,255,255,0.95); margin-bottom: 1rem; max-width: 480px; }
+.cta-banner .section-disclaimer { position: absolute; bottom: 8px; right: 12px; color: rgba(255,255,255,0.8); font-size: 0.7rem; margin: 0; }
+
+/* Experts: صور + إنستغرام */
+.expert-card .expert-photo-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 280px;
+  margin: 0 auto 1rem;
+  border-radius: 12px;
+  overflow: hidden;
+}
+.expert-card .expert-photo-wrap img { width: 100%; height: 280px; object-fit: cover; display: block; }
+.expert-ig {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: #fff;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  border: 1px solid var(--border);
+}
+.expert-card h3 { margin: 0 0 0.5rem; font-size: 1.1rem; }
+.expert-title { font-size: 0.9rem; font-weight: 600; color: var(--text); margin: 0 0 0.5rem; }
+
+/* Success: خلفية زرقاء، كرت أبيض، هواتف */
+.success-section {
+  background: linear-gradient(180deg, #a8c5d4 0%, #8ba9b8 100%);
+  padding: 3rem 1.5rem;
+  text-align: center;
+}
+.success-section .section-h2 { color: #1a1a1a; }
+.success-section .section-p { color: #333; max-width: 640px; margin: 0 auto 2rem; }
+.success-carousel-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+.success-card {
+  background: #fff;
+  padding: 2rem 3rem;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+  font-size: 1.1rem;
+  color: var(--text);
+}
+.success-card strong { font-size: 2rem; display: block; margin-bottom: 0.25rem; }
+.success-phones {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-top: 2rem;
+  flex-wrap: wrap;
+}
+.phone-mock {
+  width: 160px;
+  height: 280px;
+  border-radius: 24px;
+  overflow: hidden;
+  border: 4px solid #333;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.2);
+}
+.phone-mock img { width: 100%; height: 100%; object-fit: cover; }
+
+/* Online Dating Advice */
+.advice-section {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
   background: var(--bg-alt);
 }
+.advice-section .section-h2 { margin-bottom: 0.5rem; }
+.advice-section .section-p { margin-bottom: 2rem; }
+.arrow-icon.red { color: #c41e3a; }
+.advice-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+.advice-card {
+  background: var(--bg);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  text-align: left;
+}
+.advice-card img { width: 100%; height: 180px; object-fit: cover; display: block; }
+.advice-card h3 { font-size: 1rem; margin: 1rem 1rem 0; line-height: 1.3; }
+.advice-card p { font-size: 0.9rem; color: var(--text-muted); margin: 1rem; line-height: 1.5; }
+.advice-card footer { font-size: 0.8rem; color: var(--text-muted); padding: 0 1rem 1rem; }
+.btn-read-more {
+  display: inline-block;
+  padding: 0.75rem 2rem;
+  background: var(--primary);
+  color: #fff !important;
+  font-weight: 600;
+  border-radius: 8px;
+  text-decoration: none !important;
+}
+.btn-read-more:hover { opacity: 0.9; }
 
 .section-h2 {
   font-size: clamp(1.5rem, 4vw, 2rem);
@@ -342,90 +682,6 @@ a:hover {
   color: var(--text-muted);
   margin: 0;
   line-height: 1.6;
-}
-
-.sub-links {
-  margin-top: 1.5rem;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 1rem;
-}
-
-.sub-links a {
-  font-weight: 500;
-}
-
-/* Reviews */
-.reviews-section {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 3rem 1.5rem;
-  background: var(--bg-alt);
-}
-
-.reviews-section .section-h2 {
-  margin-bottom: 0.5rem;
-}
-
-.reviews-section .section-p {
-  margin-bottom: 2rem;
-}
-
-.reviews-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1.5rem;
-}
-
-.review-card {
-  margin: 0;
-  padding: 1.5rem;
-  background: var(--bg);
-  border-radius: 10px;
-  border: 1px solid var(--border);
-  text-align: left;
-}
-
-.review-card p {
-  font-size: 0.95rem;
-  color: var(--text);
-  margin: 0 0 1rem;
-  line-height: 1.6;
-}
-
-.review-card footer {
-  font-size: 0.85rem;
-  color: var(--text-muted);
-}
-
-.review-card cite {
-  font-style: normal;
-  display: block;
-  margin-top: 0.25rem;
-}
-
-/* Featured */
-.content-section.featured {
-  padding: 2rem 1.5rem;
-}
-
-.featured-label {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--text-muted);
-  margin: 0;
-}
-
-/* CTA section */
-.cta-section {
-  text-align: center;
-  padding: 3rem 1.5rem;
-  background: var(--bg-alt);
-}
-
-.cta-section .section-p {
-  margin-bottom: 1.5rem;
 }
 
 /* Experts */
@@ -449,27 +705,6 @@ a:hover {
   text-align: center;
 }
 
-.expert-photo {
-  width: 120px;
-  height: 120px;
-  margin: 0 auto 1rem;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--border) 0%, var(--bg-alt) 100%);
-}
-
-.expert-card h3 {
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin: 0 0 0.25rem;
-  color: var(--text);
-}
-
-.expert-title {
-  font-size: 0.85rem;
-  color: var(--primary);
-  margin: 0 0 0.5rem;
-}
-
 .expert-card p:last-of-type {
   font-size: 0.9rem;
   color: var(--text-muted);
@@ -477,33 +712,7 @@ a:hover {
   line-height: 1.5;
 }
 
-/* Success section */
-.success-section {
-  text-align: center;
-  padding: 3rem 1.5rem;
-  background: var(--bg-alt);
-}
-
-.badge-row {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 1rem;
-  margin-top: 1.5rem;
-}
-
-.badge {
-  display: inline-block;
-  padding: 0.5rem 1rem;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: var(--text);
-}
-
-/* Footer — Dating.com style */
+/* Footer — Dating.com: براند + شبكة */
 .footer {
   background: var(--footer-bg);
   color: var(--footer-text);
@@ -515,11 +724,45 @@ a:hover {
   margin: 0 auto;
 }
 
+.footer-top {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 3rem;
+  margin-bottom: 2rem;
+  align-items: start;
+}
+
+.footer-brand .footer-logo {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #fff;
+  text-decoration: none;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+.footer-tagline {
+  font-size: 0.9rem;
+  margin: 0 0 1rem;
+  opacity: 0.9;
+  line-height: 1.5;
+}
+.btn-join {
+  display: inline-block;
+  padding: 0.5rem 1.25rem;
+  background: var(--primary);
+  color: #fff !important;
+  font-weight: 600;
+  border-radius: 8px;
+  text-decoration: none !important;
+  margin-bottom: 1rem;
+}
+.footer-lang-select { font-size: 0.85rem; opacity: 0.85; }
+.lang-arrow { font-size: 0.7rem; margin-left: 0.25rem; }
+
 .footer-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 2rem;
-  margin-bottom: 2rem;
 }
 
 .footer-col h4 {
@@ -578,30 +821,27 @@ a:hover {
 
 /* Mobile */
 @media (max-width: 768px) {
-  .hero-wrap {
-    min-height: 70vh;
-  }
+  .hero-wrap { min-height: 70vh; }
+  .hero-card { margin: 2rem 1rem; max-width: none; }
+  .nav { order: 3; width: 100%; justify-content: center; }
+  .header-right { margin-left: auto; }
+  .icons-row { grid-template-columns: 1fr; }
 
-  .hero-card {
-    margin: 2rem 1rem;
-    max-width: none;
-  }
-
-  .nav {
-    order: 3;
-    width: 100%;
-    justify-content: center;
-  }
-
-  .header-right {
-    margin-left: auto;
-  }
-
-  .icons-row {
+  .split-section {
     grid-template-columns: 1fr;
+    padding: 2rem 1rem;
   }
+  .split-section.alt .split-content { order: 1; }
+  .split-section.alt .split-visual { order: 2; }
+  .split-content .section-h2,
+  .split-content .section-p { text-align: center; }
+  .profile-cards-wrap { min-height: 220px; }
+  .profile-card { width: 160px; }
+  .profile-card img { height: 200px; }
 
-  .experts-grid {
-    grid-template-columns: 1fr;
-  }
+  .category-cards { grid-template-columns: 1fr; max-width: 320px; margin-left: auto; margin-right: auto; }
+  .advice-cards { grid-template-columns: 1fr; }
+  .footer-top { grid-template-columns: 1fr; }
+  .footer-grid { grid-template-columns: repeat(2, 1fr); }
+  .experts-grid { grid-template-columns: 1fr; }
 }

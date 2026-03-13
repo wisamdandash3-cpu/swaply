@@ -32,4 +32,30 @@
       if (dropdown) dropdown.classList.remove('open');
     });
   });
+
+  // Reviews carousel: زرّي Prev/Next
+  var carousel = document.querySelector('.reviews-carousel');
+  var cards = carousel ? carousel.querySelectorAll('.review-card') : [];
+  var dots = document.querySelectorAll('.reviews-section .carousel-dots .dot');
+  var prevBtn = document.querySelector('.reviews-carousel-wrap .prev');
+  var nextBtn = document.querySelector('.reviews-carousel-wrap .next');
+  var currentSlide = 0;
+
+  function setSlide(i) {
+    if (!carousel || !cards.length) return;
+    currentSlide = Math.max(0, Math.min(i, cards.length - 1));
+    carousel.style.transform = 'translateX(-' + (currentSlide * 100) + '%)';
+    dots.forEach(function (d, j) { d.classList.toggle('active', j === currentSlide); });
+  }
+
+  if (prevBtn) prevBtn.addEventListener('click', function () { setSlide(currentSlide - 1); });
+  if (nextBtn) nextBtn.addEventListener('click', function () { setSlide(currentSlide + 1); });
+  dots.forEach(function (d, i) { d.addEventListener('click', function () { setSlide(i); }); });
+
+  if (carousel && cards.length) {
+    carousel.style.display = 'flex';
+    carousel.style.width = (cards.length * 100) + '%';
+    cards.forEach(function (c) { c.style.flex = '0 0 ' + (100 / cards.length) + '%'; });
+    setSlide(0);
+  }
 })();
