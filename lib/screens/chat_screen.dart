@@ -114,8 +114,24 @@ class _ChatScreenState extends State<ChatScreen> {
   /// عدد من أعجبوا بي ولم أُعجب بهم بعد (للأيقونة الأولى في الصف العلوي).
   int _incomingLikesCount = 0;
   bool _loading = true;
+  String? _swaplyLogoUrl;
 
   static const String _matchSeenPrefKeyPrefix = 'swaply_match_seen_';
+
+  Future<void> _loadSwaplyLogoUrl() async {
+    try {
+      final res = await Supabase.instance.client
+          .from('app_config')
+          .select('value')
+          .eq('key', 'broadcast_avatar_url')
+          .maybeSingle();
+      if (!mounted) return;
+      final url = res?['value'] as String?;
+      if (url != null && url.trim().isNotEmpty) {
+        setState(() => _swaplyLogoUrl = url.trim());
+      }
+    } catch (_) {}
+  }
 
   void _scheduleLoadWhenVisible() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -126,7 +142,10 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   void initState() {
     super.initState();
-    if (widget.isVisible) _scheduleLoadWhenVisible();
+    if (widget.isVisible) {
+      _scheduleLoadWhenVisible();
+      _loadSwaplyLogoUrl();
+    }
   }
 
   @override
@@ -135,9 +154,29 @@ class _ChatScreenState extends State<ChatScreen> {
     // عند العودة لتاب الدردشة (مثلاً بعد إلغاء الحظر) نحدّث القائمة لتعود المحادثة كما كانت
     if (!oldWidget.isVisible && widget.isVisible) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) _loadConversations();
+        if (mounted) {
+          _loadConversations();
+          _loadSwaplyLogoUrl();
+        }
       });
     }
+  }
+
+  Widget _swaplyListFallback() {
+    return Container(
+      width: 56,
+      height: 56,
+      color: AppColors.darkBlack,
+      alignment: Alignment.center,
+      child: Text(
+        'S',
+        style: GoogleFonts.montserrat(
+          fontSize: 28,
+          fontWeight: FontWeight.w700,
+          color: Colors.white,
+        ),
+      ),
+    );
   }
 
   Future<void> _loadConversations() async {
@@ -592,29 +631,24 @@ class _ChatScreenState extends State<ChatScreen> {
                   children: [
                   if (isSwaply)
                     ClipOval(
-                      child: Transform.scale(
-                        scale: 1.68,
-                        child: Image.asset(
-                          kSwaplyLogoAsset,
-                          width: 56,
-                          height: 56,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => Container(
-                            width: 56,
-                            height: 56,
-                            color: AppColors.darkBlack,
-                            alignment: Alignment.center,
-                            child: Text(
-                              'S',
-                              style: GoogleFonts.montserrat(
-                                fontSize: 28,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.white,
+                      child: _swaplyLogoUrl != null && _swaplyLogoUrl!.trim().isNotEmpty
+                          ? Image.network(
+                              _swaplyLogoUrl!,
+                              width: 56,
+                              height: 56,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => _swaplyListFallback(),
+                            )
+                          : Transform.scale(
+                              scale: 1.68,
+                              child: Image.asset(
+                                kSwaplyLogoAsset,
+                                width: 56,
+                                height: 56,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) => _swaplyListFallback(),
                               ),
                             ),
-                          ),
-                        ),
-                      ),
                     )
                   else
                   Container(
@@ -979,6 +1013,11 @@ class _ConversationScreenState extends State<ConversationScreen> {
   String? _recordingPath;
   List<Map<String, dynamic>> _broadcastMessages = [];
   String? _currentUserDisplayName;
+  String? _swaplyLogoUrl;
+
+  /// صحيح فقط بعد أن يرد الطرف الآخر؛ قبلها لا يُعرض شريط الكتابة.
+  bool get _hasPartnerReplied =>
+      _messages.any((m) => m.senderId == widget.partnerId);
 
   @override
   void initState() {
@@ -989,6 +1028,22 @@ class _ConversationScreenState extends State<ConversationScreen> {
     _subscribeToNewMessages();
     _controller.addListener(_onTypingChanged);
     if (widget.partnerId == kSwaplyPartnerId) _loadBroadcastMessages();
+    _loadSwaplyLogoUrl();
+  }
+
+  Future<void> _loadSwaplyLogoUrl() async {
+    try {
+      final res = await Supabase.instance.client
+          .from('app_config')
+          .select('value')
+          .eq('key', 'broadcast_avatar_url')
+          .maybeSingle();
+      if (!mounted) return;
+      final url = res?['value'] as String?;
+      if (url != null && url.trim().isNotEmpty) {
+        setState(() => _swaplyLogoUrl = url.trim());
+      }
+    } catch (_) {}
   }
 
   Future<void> _loadBroadcastMessages() async {
@@ -2000,12 +2055,54 @@ class _ConversationScreenState extends State<ConversationScreen> {
 
   static const Color _swaplyCreamBg = Color(0xFFF5F0E8);
 
-  /// نص الترحيب المخصص (مع اسم المستخدم) أو الرسالة الافتراضية إن لم يُحمّل الاسم بعد.
-  String _buildSwaplyWelcomeText(AppLocalizations l10n) {
+  /// بناء ترحيب غني: اسم المستخدم بلون أسود غامق وعريض (w700).
+  Widget _buildSwaplyWelcomeRichText(BuildContext context, AppLocalizations l10n) {
     final name = _currentUserDisplayName?.trim() ?? '';
-    return name.isNotEmpty
-        ? l10n.swaplyWelcomeMessageWithName(name)
-        : l10n.swaplyWelcomeMessage;
+    if (name.isEmpty) {
+      return Text(
+        l10n.swaplyWelcomeMessage,
+        style: GoogleFonts.montserrat(
+          fontSize: 15,
+          color: AppColors.darkBlack.withValues(alpha: 0.85),
+          height: 1.55,
+        ),
+      );
+    }
+    final fullText = l10n.swaplyWelcomeMessageWithName(name);
+    final nameStart = fullText.indexOf(name);
+    if (nameStart < 0) {
+      return Text(
+        fullText,
+        style: GoogleFonts.montserrat(
+          fontSize: 15,
+          color: AppColors.darkBlack.withValues(alpha: 0.85),
+          height: 1.55,
+        ),
+      );
+    }
+    final before = fullText.substring(0, nameStart);
+    final after = fullText.substring(nameStart + name.length);
+    final baseStyle = GoogleFonts.montserrat(
+      fontSize: 15,
+      color: AppColors.darkBlack.withValues(alpha: 0.85),
+      height: 1.55,
+    );
+    final nameStyle = GoogleFonts.montserrat(
+      fontSize: 15,
+      fontWeight: FontWeight.w700,
+      color: AppColors.darkBlack,
+      height: 1.55,
+    );
+    return RichText(
+      text: TextSpan(
+        style: baseStyle,
+        children: [
+          TextSpan(text: before),
+          TextSpan(text: name, style: nameStyle),
+          TextSpan(text: after),
+        ],
+      ),
+    );
   }
 
   /// واجهة محادثة Swaply: شعار 344.png دائري + صورة المستخدم، ورسالة ترحيب.
@@ -2029,7 +2126,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
         title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _SwaplyLogoCircle(size: 36, assetPath: kSwaplyLogoAsset),
+            _SwaplyLogoCircle(size: 36, assetPath: kSwaplyLogoAsset, imageUrl: _swaplyLogoUrl),
             const SizedBox(width: 10),
             Text(
               'Swaply',
@@ -2061,6 +2158,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
               const SizedBox(height: 20),
               _CrushAvatarsStack(
                 logoAssetPath: kSwaplyLogoAsset,
+                logoImageUrl: _swaplyLogoUrl,
                 profileImageUrl: _currentUserAvatarUrl,
                 avatarSize: 72,
                 overlap: -14,
@@ -2109,20 +2207,13 @@ class _ConversationScreenState extends State<ConversationScreen> {
                           ),
                         ],
                       ),
-                      child: Text(
-                        _buildSwaplyWelcomeText(l10n),
-                        style: GoogleFonts.montserrat(
-                          fontSize: 15,
-                          color: AppColors.darkBlack.withValues(alpha: 0.85),
-                          height: 1.55,
-                        ),
-                      ),
+                      child: _buildSwaplyWelcomeRichText(context, l10n),
                     ),
                     const SizedBox(height: 8),
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        _SwaplyLogoCircle(size: 20, assetPath: kSwaplyLogoAsset),
+                        _SwaplyLogoCircle(size: 20, assetPath: kSwaplyLogoAsset, imageUrl: _swaplyLogoUrl),
                         const SizedBox(width: 8),
                         Text(
                           l10n.swaplyTeam,
@@ -2212,7 +2303,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            _SwaplyLogoCircle(size: 20, assetPath: kSwaplyLogoAsset),
+                            _SwaplyLogoCircle(size: 20, assetPath: kSwaplyLogoAsset, imageUrl: _swaplyLogoUrl),
                             const SizedBox(width: 8),
                             Text(
                               l10n.swaplyTeam,
@@ -2457,88 +2548,112 @@ class _ConversationScreenState extends State<ConversationScreen> {
                     ],
                   ),
           ),
-          if (_partnerTyping)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
-              child: Row(
-                children: [
-                  SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: AppColors.hingePurple.withValues(alpha: 0.7),
+          if (_hasPartnerReplied) ...[
+            if (_partnerTyping)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+                child: Row(
+                  children: [
+                    SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: AppColors.hingePurple.withValues(alpha: 0.7),
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    'جاري الكتابة...',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey.shade600,
-                      fontStyle: FontStyle.italic,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          if (_replyingTo != null)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              color: AppColors.hingePurple.withValues(alpha: 0.08),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      () {
-                        final s = _getReplyDisplayContent(_replyingTo!);
-                        return s.length > 50 ? '${s.substring(0, 50)}...' : s;
-                      }(),
+                    const SizedBox(width: 8),
+                    Text(
+                      'جاري الكتابة...',
                       style: TextStyle(
                         fontSize: 13,
-                        color: Colors.grey.shade700,
+                        color: Colors.grey.shade600,
+                        fontStyle: FontStyle.italic,
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close_rounded),
-                    onPressed: () => setState(() => _replyingTo = null),
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                  ),
-                ],
+                  ],
+                ),
               ),
+            if (_replyingTo != null)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                color: AppColors.hingePurple.withValues(alpha: 0.08),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        () {
+                          final s = _getReplyDisplayContent(_replyingTo!);
+                          return s.length > 50 ? '${s.substring(0, 50)}...' : s;
+                        }(),
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.grey.shade700,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close_rounded),
+                      onPressed: () => setState(() => _replyingTo = null),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
+                  ],
+                ),
+              ),
+            _ChatInputBar(
+              controller: _controller,
+              onSend: _sendMessage,
+              onGiftTap: _showGiftSheet,
+              onVoiceTap: _startVoiceRecording,
+              isRecording: _isRecording,
+              recordingDurationSeconds: _recordingDurationSec,
+              recordingPaused: _recordingPaused,
+              waveformHeights: List.from(_waveformHeights),
+              onVoiceCancel: _cancelVoiceRecording,
+              onVoicePauseResume: _pauseResumeVoiceRecording,
+              onVoiceSend: _sendVoiceRecording,
             ),
-          _ChatInputBar(
-            controller: _controller,
-            onSend: _sendMessage,
-            onGiftTap: _showGiftSheet,
-            onVoiceTap: _startVoiceRecording,
-            isRecording: _isRecording,
-            recordingDurationSeconds: _recordingDurationSec,
-            recordingPaused: _recordingPaused,
-            waveformHeights: List.from(_waveformHeights),
-            onVoiceCancel: _cancelVoiceRecording,
-            onVoicePauseResume: _pauseResumeVoiceRecording,
-            onVoiceSend: _sendVoiceRecording,
-          ),
+          ],
         ],
       ),
     );
   }
 }
 
-/// دائرة كاملة لشعار Swaply (344.png) — صورة دائرية تملأ الإطار.
+/// دائرة كاملة لشعار Swaply — صورة دائرية. إن وُجد imageUrl (من لوحة التحكم) تُعرض، وإلا الشعار الافتراضي.
 class _SwaplyLogoCircle extends StatelessWidget {
-  const _SwaplyLogoCircle({required this.size, required this.assetPath});
+  const _SwaplyLogoCircle({required this.size, required this.assetPath, this.imageUrl});
 
   final double size;
   final String assetPath;
+  final String? imageUrl;
 
   @override
   Widget build(BuildContext context) {
+    Widget imageChild;
+    if (imageUrl != null && imageUrl!.trim().isNotEmpty) {
+      imageChild = Image.network(
+        imageUrl!,
+        fit: BoxFit.cover,
+        width: size,
+        height: size,
+        errorBuilder: (_, __, ___) => _fallbackLogo(size),
+      );
+    } else {
+      imageChild = Transform.scale(
+        scale: 1.68,
+        child: Image.asset(
+          assetPath,
+          fit: BoxFit.cover,
+          width: size,
+          height: size,
+          errorBuilder: (_, __, ___) => _fallbackLogo(size),
+        ),
+      );
+    }
     return Container(
       width: size,
       height: size,
@@ -2553,28 +2668,23 @@ class _SwaplyLogoCircle extends StatelessWidget {
         ],
       ),
       child: ClipOval(
-        child: Transform.scale(
-          scale: 1.68,
-          child: Image.asset(
-            assetPath,
-            fit: BoxFit.cover,
-            width: size,
-            height: size,
-            errorBuilder: (_, __, ___) => Container(
-              width: size,
-              height: size,
-              color: AppColors.darkBlack,
-              alignment: Alignment.center,
-              child: Text(
-                'S',
-                style: GoogleFonts.montserrat(
-                  fontSize: size * 0.5,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          ),
+        child: imageChild,
+      ),
+    );
+  }
+
+  static Widget _fallbackLogo(double size) {
+    return Container(
+      width: size,
+      height: size,
+      color: AppColors.darkBlack,
+      alignment: Alignment.center,
+      child: Text(
+        'S',
+        style: GoogleFonts.montserrat(
+          fontSize: size * 0.5,
+          fontWeight: FontWeight.w700,
+          color: Colors.white,
         ),
       ),
     );
@@ -2585,6 +2695,7 @@ class _SwaplyLogoCircle extends StatelessWidget {
 class _CrushAvatarsStack extends StatelessWidget {
   const _CrushAvatarsStack({
     required this.logoAssetPath,
+    this.logoImageUrl,
     required this.profileImageUrl,
     required this.avatarSize,
     required this.overlap,
@@ -2592,6 +2703,7 @@ class _CrushAvatarsStack extends StatelessWidget {
   });
 
   final String logoAssetPath;
+  final String? logoImageUrl;
   final String? profileImageUrl;
   final double avatarSize;
   final double overlap;
@@ -2614,8 +2726,8 @@ class _CrushAvatarsStack extends StatelessWidget {
             top: 0,
             child: _CrushAvatarFrame(
               size: avatarSize,
-              assetPath: logoAssetPath,
-              imageUrl: null,
+              assetPath: logoImageUrl != null ? null : logoAssetPath,
+              imageUrl: logoImageUrl,
             ),
           ),
           Positioned(
@@ -4011,18 +4123,9 @@ class _ChatInputBarState extends State<_ChatInputBar> {
     final bottomPadding = MediaQuery.of(context).padding.bottom;
 
     return Container(
-      margin: EdgeInsets.fromLTRB(10, 6, 10, 6 + bottomPadding),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
+      padding: EdgeInsets.fromLTRB(12, 10, 12, 10 + bottomPadding),
+      decoration: const BoxDecoration(
         color: barBg,
-        borderRadius: BorderRadius.circular(28),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
-            blurRadius: 12,
-            offset: const Offset(0, -2),
-          ),
-        ],
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
